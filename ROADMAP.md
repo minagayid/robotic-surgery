@@ -108,3 +108,22 @@ collision-safety input.
 4. Build the sensor timing/latency bench before selecting fusion algorithms.
 5. Create the first hazard log and tabletop evaluation scenario pack.
 
+## Surgical extension
+
+The surgical program runs as a separately governed medical-device workstream.
+Its stages do not inherit approval from the general robotics roadmap:
+
+1. establish a medical quality system, clinical governance board, intended-use
+   statements, and procedure-specific hazard files;
+2. build a research-only surgical bench with synthetic tissue, force sensing,
+   stereo/endoscopic imaging, instrument tracking, and deterministic replay;
+3. deliver navigation, camera control, tremor filtering, and virtual fixtures
+   under continuous surgeon control;
+4. validate bounded autonomous tasks such as needle positioning or camera
+   alignment on phantoms and approved ex-vivo/cadaver models;
+5. enter clinical investigation only after independent technical, clinical,
+   ethics, quality, and regulatory approvals; and
+6. expand one procedure, anatomy, instrument set, and population at a time.
+
+See [`SURGICAL_PROGRAM.md`](SURGICAL_PROGRAM.md) for the full program and its
+contingency gates.
