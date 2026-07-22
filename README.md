@@ -62,6 +62,26 @@ See [Architecture](docs/ARCHITECTURE.md), [Sensor Fusion](docs/SENSOR_FUSION.md)
 [Learning Plan](docs/LEARNING.md), [Security and Safety](SECURITY.md), and the
 [Roadmap](ROADMAP.md).
 
+## Surgical robotics program
+
+RobotX Surgical is the proposed high-risk medical extension for human, dental,
+and veterinary procedures. It is a clinician-led program that advances from
+navigation and shared control to supervised task autonomy one validated
+procedure segment at a time. It does not authorize patient or animal use.
+
+Start with the [Surgical Program Charter](SURGICAL_PROGRAM.md), then review the
+[medical architecture](docs/surgical/ARCHITECTURE.md),
+[procedure portfolio](docs/surgical/PROCEDURE_PORTFOLIO.md),
+[data and training plan](docs/surgical/DATA_TRAINING.md),
+[validation pathway](docs/surgical/VALIDATION_CLINICAL.md),
+[quality and regulatory plan](docs/surgical/REGULATORY_QUALITY.md),
+[operating model](docs/surgical/OPERATIONS.md), and
+[contingency playbook](docs/surgical/CONTINGENCY_PLAYBOOK.md).
+
+Full-procedure autonomy is a long-term research objective, not the first product.
+Every clinical capability must have a named supervising clinician, bounded
+intended use, evidence package, takeover path, and conventional fallback.
+
 ## Relationship to existing projects
 
 - [`robotX`](https://github.com/minagayid/robotX) is the seed for compliant POV
@@ -98,4 +118,3 @@ This planning repository contains no training data, credentials, private model
 weights, or hardware secrets. Future implementation repositories should use
 signed releases, dependency lockfiles, reproducible builds, and a documented
 software bill of materials.
-
