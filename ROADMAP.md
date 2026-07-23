@@ -127,3 +127,20 @@ Its stages do not inherit approval from the general robotics roadmap:
 
 See [`SURGICAL_PROGRAM.md`](SURGICAL_PROGRAM.md) for the full program and its
 contingency gates.
+
+### Surgical hardware next actions
+
+1. Approve one narrow intended-use research configuration; default to a
+   multi-port phantom bench with one visualization arm and two blunt instrument
+   arms.
+2. Resolve the procedure-specific TBR values in
+   [`HARDWARE_REQUIREMENTS.md`](docs/surgical/HARDWARE_REQUIREMENTS.md).
+3. Compare mechanical, software, and hybrid remote-center concepts using the
+   design-budget method in
+   [`ROBOT_AND_EXTREMITIES_DESIGN.md`](docs/surgical/ROBOT_AND_EXTREMITIES_DESIGN.md).
+4. Establish the medical-device quality system and supplier controls before
+   releasing clinical-intent drawings or instruments; follow
+   [`MANUFACTURING_AND_ASSEMBLY_GUIDE.md`](docs/surgical/MANUFACTURING_AND_ASSEMBLY_GUIDE.md).
+5. Build the room, docking, alarm, release, and conversion simulator around
+   [`USER_AND_OPERATIONS_GUIDE.md`](docs/surgical/USER_AND_OPERATIONS_GUIDE.md)
+   before any living-subject protocol is considered.

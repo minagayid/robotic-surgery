@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">RobotX Surgical system architecture</title>
+  <desc id="desc">Surgeon console and planning computer feed a real-time arbiter under independent safety supervision, controlling four bedside arms around a synthetic workspace.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#071425"/><stop offset="1" stop-color="#10263b"/></linearGradient>
+    <filter id="shadow"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-opacity=".28"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#5fd4ff"/></marker>
+    <style>
+      .card{fill:#112d43;stroke:#3f7897;stroke-width:2;rx:20;filter:url(#shadow)}
+      .safe{fill:#123d3d;stroke:#54e1c0;stroke-width:3;rx:20;filter:url(#shadow)}
+      .arm{fill:#15283a;stroke:#8ba4b8;stroke-width:2;rx:18}
+      .t{font:700 30px 'Segoe UI',sans-serif;fill:#f5fbff}.s{font:500 21px 'Segoe UI',sans-serif;fill:#bcd0df}
+      .k{font:700 19px 'Segoe UI',sans-serif;fill:#61ddc1}.line{fill:none;stroke:#5fd4ff;stroke-width:5;marker-end:url(#arrow)}
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="url(#bg)"/>
+  <text x="800" y="70" text-anchor="middle" class="t" font-size="42">RobotX Surgical — Reference System Architecture</text>
+  <rect class="card" x="70" y="150" width="350" height="150"/>
+  <text class="t" x="245" y="205" text-anchor="middle">Surgeon Console</text><text class="s" x="245" y="245" text-anchor="middle">Masters · display · pedals</text><text class="s" x="245" y="276" text-anchor="middle">Enable · clutch · stop</text>
+  <rect class="card" x="70" y="380" width="350" height="150"/>
+  <text class="t" x="245" y="435" text-anchor="middle">Planning + Vision</text><text class="s" x="245" y="475" text-anchor="middle">World model · workflow</text><text class="s" x="245" y="506" text-anchor="middle">Bounded motion proposals</text>
+  <rect class="safe" x="560" y="125" width="480" height="155"/>
+  <text class="k" x="800" y="170" text-anchor="middle">INDEPENDENT SAFETY CONTROLLER</text><text class="s" x="800" y="212" text-anchor="middle">Limits · watchdogs · E-stops · power</text><text class="s" x="800" y="245" text-anchor="middle">Cannot be overridden by planning</text>
+  <rect class="card" x="585" y="365" width="430" height="170"/>
+  <text class="t" x="800" y="425" text-anchor="middle">Real-Time Command Arbiter</text><text class="s" x="800" y="466" text-anchor="middle">Short-lived commands only</text><text class="s" x="800" y="499" text-anchor="middle">Mode + instrument + workspace gates</text>
+  <path class="line" d="M420 225H535"/><path class="line" d="M420 455H550"/><path class="line" d="M800 280V335"/>
+  <rect class="arm" x="1130" y="120" width="390" height="115"/><text class="t" x="1325" y="170" text-anchor="middle">Visualization Arm</text><text class="s" x="1325" y="205" text-anchor="middle">Stereo camera / scope</text>
+  <rect class="arm" x="1130" y="280" width="390" height="115"/><text class="t" x="1325" y="330" text-anchor="middle">Instrument Arm A</text><text class="s" x="1325" y="365" text-anchor="middle">Sterile adapter + tool</text>
+  <rect class="arm" x="1130" y="440" width="390" height="115"/><text class="t" x="1325" y="490" text-anchor="middle">Instrument Arm B</text><text class="s" x="1325" y="525" text-anchor="middle">Sterile adapter + tool</text>
+  <rect class="arm" x="1130" y="600" width="390" height="115"/><text class="t" x="1325" y="650" text-anchor="middle">Assistant Arm</text><text class="s" x="1325" y="685" text-anchor="middle">Probe / retractor / fluid</text>
+  <path class="line" d="M1015 435C1080 435 1070 178 1130 178"/><path class="line" d="M1015 450H1080V338H1130"/><path class="line" d="M1015 470H1080V498H1130"/><path class="line" d="M1015 490C1080 490 1070 658 1130 658"/>
+  <rect class="safe" x="515" y="660" width="570" height="145"/>
+  <text class="t" x="800" y="713" text-anchor="middle">Synthetic Patient Workspace</text><text class="s" x="800" y="753" text-anchor="middle">Protected geometry · uncertainty · force · visibility</text><text class="s" x="800" y="784" text-anchor="middle">Synchronized evidence and replay</text>
+  <path class="line" d="M1130 700C1100 760 1090 755 1085 755"/>
+  <text class="s" x="70" y="850">Planning-only reference · no patient use · energy disabled in simulation</text>
+</svg>

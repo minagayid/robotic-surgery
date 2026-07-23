@@ -16,6 +16,30 @@ hemostasis, energy delivery, closure, instrument/accounting checks, complication
 management, postoperative handoff, and the surrounding human team. A robot that
 only moves instruments has not mastered a full procedure.
 
+## Engineering package
+
+The program now allocates the physical platform through four controlled planning
+documents:
+
+- [Hardware requirements](docs/surgical/HARDWARE_REQUIREMENTS.md) define the
+  patient-side carts, arms, instruments, console, safety core, sensing, sterile
+  boundary, performance budgets, and verification hierarchy.
+- [Robot and extremities reference design](docs/surgical/ROBOT_AND_EXTREMITIES_DESIGN.md)
+  decomposes each extremity from base and 7-DoF proximal arm through the
+  access/remote-center module, sterile adapter, instrument drive, shaft, distal
+  wrist, and end effector.
+- [Manufacturing and assembly guide](docs/surgical/MANUFACTURING_AND_ASSEMBLY_GUIDE.md)
+  defines design transfer, supplier and material controls, assembly, sterile
+  instruments, calibration, acceptance, traceability, process validation,
+  installation, and service.
+- [Use and operations guide](docs/surgical/USER_AND_OPERATIONS_GUIDE.md) defines
+  setup, draping, docking, surgeon-controlled operation, exchange, alarms,
+  takeover, manual release, conversion support, post-case, reprocessing, and
+  training.
+
+These are a reference architecture and research plan, not production drawings,
+clinical labeling, or authorization to build a patient-use device.
+
 ## Non-negotiable boundaries
 
 - A licensed surgeon, dentist, or veterinarian remains the responsible operator
@@ -142,4 +166,3 @@ Success is not a single demonstration. It is a portfolio of authorized,
 procedure-specific capabilities with reproducible outcomes, independent safety,
 trained clinical teams, sterile and serviceable hardware, secure offline updates,
 transparent limitations, postmarket monitoring, and rapid rollback or recall.
-

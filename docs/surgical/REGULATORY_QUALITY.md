@@ -22,15 +22,16 @@ February 2, 2026 and incorporates ISO 13485:2016:
 - IEC 62304 — medical-device software life cycle;
 - IEC 62366-1 — usability engineering;
 - IEC 60601-1 and applicable collateral/particular standards — electrical safety;
-- IEC 80601-2-77 — basic safety and essential performance of robotically assisted
-  surgical equipment;
+- IEC 80601-2-77:2019 + AMD1:2023 (Edition 1.1 consolidated) — basic safety
+  and essential performance of robotically assisted surgical equipment;
 - IEC 81001-5-1 and current regulator cybersecurity guidance;
 - ISO 10993 series where patient-contact biocompatibility applies;
 - ISO 14155 or jurisdictional good clinical practice for device investigations;
 - sterilization, packaging, reprocessing, EMC, laser, radiation, and energy-device
   standards appropriate to the actual product.
 
-FDA recognizes IEC 80601-2-77 for robotically assisted surgical equipment:
+As of July 2026, FDA recognition 6-510 covers IEC 80601-2-77 Edition 1.1.
+Recognition of Edition 1.0 remains in transition only until July 2, 2028:
 <https://www.accessdata.fda.gov/scripts/cdrh/cfdocs/cfstandards/detail.cfm?standard__identification_no=46090>.
 
 ## Intended use and submission strategy
@@ -91,4 +92,3 @@ certain deaths, serious injuries, and reportable malfunctions under 21 CFR Part
 - manufacturing, acceptance, calibration, servicing, and reprocessing procedures;
 - labeling, contraindications, training, and emergency/conversion instructions;
 - surveillance, vigilance, field action, and end-of-support plans.
-

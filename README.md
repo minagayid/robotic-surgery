@@ -4,8 +4,8 @@ An offline-first robotics platform for learning human-like manipulation from
 licensed first-person data and acting from a continuously fused spatial world
 model.
 
-> Status: planning and architecture. No component is yet approved for unattended
-> or safety-critical operation.
+> Status: planning plus a simulated Phase 1 host-runtime skeleton. No component
+> is approved for physical, unattended, or safety-critical operation.
 
 ## Mission
 
@@ -71,6 +71,10 @@ procedure segment at a time. It does not authorize patient or animal use.
 
 Start with the [Surgical Program Charter](SURGICAL_PROGRAM.md), then review the
 [medical architecture](docs/surgical/ARCHITECTURE.md),
+[hardware requirements](docs/surgical/HARDWARE_REQUIREMENTS.md),
+[robot and extremities reference design](docs/surgical/ROBOT_AND_EXTREMITIES_DESIGN.md),
+[manufacturing and assembly guide](docs/surgical/MANUFACTURING_AND_ASSEMBLY_GUIDE.md),
+[use and operations guide](docs/surgical/USER_AND_OPERATIONS_GUIDE.md),
 [procedure portfolio](docs/surgical/PROCEDURE_PORTFOLIO.md),
 [data and training plan](docs/surgical/DATA_TRAINING.md),
 [validation pathway](docs/surgical/VALIDATION_CLINICAL.md),
@@ -81,6 +85,17 @@ Start with the [Surgical Program Charter](SURGICAL_PROGRAM.md), then review the
 Full-procedure autonomy is a long-term research objective, not the first product.
 Every clinical capability must have a named supervising clinician, bounded
 intended use, evidence package, takeover path, and conventional fallback.
+
+### Surgical visual and training package
+
+The [visual design package](docs/surgical/VISUAL_DESIGN_PACKAGE.md) adds four
+project renders, three deterministic system diagrams, compact manufacturing and
+operating guides, a first virtual-case tutorial, and two silent synthetic-phantom
+walkthrough videos. The media demonstrates robot configuration, setup, docking,
+surgeon-controlled S2 motion, exchange, safe hold, undocking, and evidence review;
+it intentionally omits clinical technique and patient anatomy.
+
+![RobotX Surgical reference system](assets/surgical/renders/robotx-surgical-system.png)
 
 ## Relationship to existing projects
 
@@ -111,6 +126,18 @@ The recommended first demonstrator is tabletop pick-and-place:
 
 Success means at least 90% completion across a held-out test layout, zero safety
 limit violations, and reproducible recovery from expected perception failures.
+
+## Executable Phase 1 skeleton
+
+The first implementation is now in [`src/robotx_os`](src/robotx_os). It provides
+versioned runtime contracts, expiring short-horizon commands, deterministic
+host-side safety checks, latched stops, a simulation-only actuator, and a local
+integrity-checked event journal. It has no third-party runtime dependencies and
+runs offline.
+
+See the [implementation guide](docs/IMPLEMENTATION.md) and the draft
+[Phase 1 safety case](docs/PHASE1_SAFETY_CASE.md). This code is a behavior
+reference and simulation harness; it must not be connected to physical motors.
 
 ## Repository policy
 

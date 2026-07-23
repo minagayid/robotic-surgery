@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotx-os"
+version = "0.1.0"
+description = "Offline-first, safety-oriented robotics runtime reference skeleton"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.scripts]
+robotx-demo = "robotx_os.demo:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
