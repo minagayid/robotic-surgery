@@ -65,11 +65,35 @@ field correction/recall, cybersecurity response, and periodic benefit-risk revie
 - boundary anatomy and poor visibility;
 - camera, tracking, force, energy, drive, compute, display, control, and log faults;
 - calibration displacement and wrong instrument/accessory;
+- wrong cart/arm identity, layout mismatch, unmeasured table movement, and
+  collision-envelope disagreement;
+- stale/frozen/occluded images, invalid overlays, tracking loss, force-sensor
+  drift/overload, and contradictory sensor-health states;
 - unexpected motion, tissue deformation, bleeding, smoke, contamination, and fire;
 - lost power, brownout, thermal throttling, storage exhaustion, and bus flooding;
 - malicious/corrupt bundle, replayed message, removable-media exposure;
 - alarm overload, operator error, team miscommunication, and delayed takeover;
 - conventional conversion under time pressure.
+
+## Enhancement-specific evidence
+
+No design feature becomes a safety or performance claim merely because it works in
+a simulator. Configuration planning, force feedback, visual overlays, team
+displays, and analytics each require their own traceable evidence package:
+
+1. **Configuration digital twin:** measure placement/registration uncertainty and
+   test the same scenario across room, table, cart, cable, and user variation.
+2. **Distal sensing:** establish tip-level ground truth, sensor drift/overload and
+   life limits, then test whether display or haptic feedback causes use errors.
+3. **Visual enhancement:** measure end-to-end latency, registration error,
+   withdrawal behavior, and whether native imagery remains interpretable under
+   an incorrect, delayed, missing, or distracting overlay.
+4. **Team display and replay:** test role clarity, alarm comprehension, privacy,
+   access control, auditability, and recovery when the secondary display fails.
+5. **Analytics/AI:** lock intended use and datasets; assess clinically relevant
+   performance and subgroup behavior prospectively, monitor drift, and prove a
+   safe disable/rollback path. No analytics result may silently control motion or
+   energy.
 
 ## Release gates
 
@@ -92,4 +116,3 @@ Rollback cannot cross incompatible hardware, calibration, instrument, or patient
 data schema boundaries. A safety issue may require capability disablement, site
 notification, field correction, recall, or study suspension—not merely a model
 update.
-

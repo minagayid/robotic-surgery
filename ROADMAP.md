@@ -144,3 +144,7 @@ contingency gates.
 5. Build the room, docking, alarm, release, and conversion simulator around
    [`USER_AND_OPERATIONS_GUIDE.md`](docs/surgical/USER_AND_OPERATIONS_GUIDE.md)
    before any living-subject protocol is considered.
+6. Use the research-backed, safety-constrained priorities in
+   [`TECHNOLOGY_LANDSCAPE_AND_ENHANCEMENT_PLAN.md`](docs/surgical/TECHNOLOGY_LANDSCAPE_AND_ENHANCEMENT_PLAN.md):
+   configuration-aware setup and sensor/display integrity first; optional distal
+   sensing and advisory visual enhancements only after dedicated evidence gates.

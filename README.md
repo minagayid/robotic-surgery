@@ -77,6 +77,7 @@ Start with the [Surgical Program Charter](SURGICAL_PROGRAM.md), then review the
 [use and operations guide](docs/surgical/USER_AND_OPERATIONS_GUIDE.md),
 [procedure portfolio](docs/surgical/PROCEDURE_PORTFOLIO.md),
 [data and training plan](docs/surgical/DATA_TRAINING.md),
+[technology landscape and enhancement plan](docs/surgical/TECHNOLOGY_LANDSCAPE_AND_ENHANCEMENT_PLAN.md),
 [validation pathway](docs/surgical/VALIDATION_CLINICAL.md),
 [quality and regulatory plan](docs/surgical/REGULATORY_QUALITY.md),
 [operating model](docs/surgical/OPERATIONS.md), and

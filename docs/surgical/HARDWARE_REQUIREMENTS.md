@@ -62,6 +62,8 @@ are approved.
 | HWR-SYS-010 | One fault shall not silently enable motion or energy; redundant channels shall be sufficiently independent for the risk-control claim they support. | FMEA, FTA/STPA, schematic and software review |
 | HWR-SYS-011 | Essential functions shall meet specified behavior during normal power, brownout, loss of mains, emergency power transfer, thermal stress, and electromagnetic disturbance. | Electrical safety, EMC, thermal and power-transfer tests |
 | HWR-SYS-012 | All safety-critical events shall be time-synchronized, append-only, integrity checked, and recoverable after a crash. | Power-pull, storage-full and replay tests |
+| HWR-SYS-013 | Every enabled case configuration shall bind the allowed procedure segment, patient-side cart/arm roles and identities, instrument/accessory set, imaging chain, table/room envelope, software/model, and calibration manifest; unknown or mismatched configuration shall inhibit patient-side enable. | Identity spoofing, placement tolerance, configuration-diff and simulated-use tests |
+| HWR-SYS-014 | Any shared-control, visualization-assist, analytic, or learned function shall declare its input validity conditions, authority, limits, fallback, and disable criteria; it shall not independently initiate a surgical task. | Authority review, fault injection, state-machine and human-factors tests |
 
 ## 4. Patient-side carts and arms
 
@@ -77,6 +79,7 @@ are approved.
 | HWR-ARM-008 | Manual positioning shall be gravity compensated and intentionally enabled; releasing the enable control shall return the arm to a stable state. | Simulated-use and stuck-control tests |
 | HWR-ARM-009 | The arm shall provide service access without exposing calibration or safety adjustments to clinical users. | Service and misuse inspection |
 | HWR-ARM-010 | Arm reach, payload, joint torque, stiffness, backlash, repeatability, speed, and thermal limits shall be defined for each configuration using the design-budget method in `ROBOT_AND_EXTREMITIES_DESIGN.md`. | Requirements trace and worst-case test |
+| HWR-ARM-011 | A modular cart layout shall be recorded as a measured configuration, including cart identity, base lock, arm pose, table relationship, cable envelope, and permitted workspace; planning output alone shall not establish readiness. | Placement, collision, wrong-cart and room-variation tests |
 
 ## 5. Access constraint and distal extremity
 
@@ -99,6 +102,7 @@ proximal arm → access/remote-center alignment → sterile adapter
 | HWR-EXT-008 | The distal mechanism shall have defined position, force, temperature, and energy error budgets at the working tip rather than only at the motors. | Tip-level metrology under representative load |
 | HWR-EXT-009 | The instrument shall support a clinician-controlled release method for grasped tissue or a trapped object after loss of power. | Timed release test under worst-case load |
 | HWR-EXT-010 | Reusable lumens, joints, crevices, and disassemblies shall be designed for validated cleaning and sterilization; inaccessible soil traps are prohibited. | Design inspection and worst-case reprocessing validation |
+| HWR-EXT-011 | An instrument that provides distal force or tactile information shall identify its sensing path, calibration, uncertainty, overload, drift, life state, and fail-safe behavior; uncertain measurements shall not be displayed as valid force. | Traceable tip metrology, overload, drift, reprocessing-life and degraded-signal tests |
 
 ## 6. Instrument and accessory classes
 
@@ -129,6 +133,8 @@ insufflation, or medication-delivery systems into the first platform.
 | HWR-SNS-004 | Registration and tool tracking shall expose target registration error, tracking residuals, field coverage, age, and invalidation conditions to the safety supervisor. | Displacement, occlusion and distortion tests |
 | HWR-SNS-005 | Cameras shall report frame age, drop rate, calibration, exposure/occlusion, and optical-chain state; frozen imagery shall be detected. | Frozen/replayed/delayed frame tests |
 | HWR-SNS-006 | Safety functions shall define which sensors are independent and which share power, clock, optics, computation, communication, or calibration. | Dependency and common-cause analysis |
+| HWR-SNS-007 | The system shall expose a bounded evidence state—valid, degraded, invalid, or unknown—for every safety-relevant imaging, tracking, force, and access-load input and shall apply the associated restriction before use. | Stale, frozen, contradictory, occluded and calibration-loss fault tests |
+| HWR-SNS-008 | An image overlay or enhancement shall expose source, age, registration/calibration status, error/uncertainty, and confidence; it shall be readily removable and shall not obscure the native image or alter motion/energy permission. | Latency, misregistration, display-failure and simulated-use tests |
 
 ## 8. Surgeon console and team controls
 
@@ -141,6 +147,7 @@ insufflation, or medication-delivery systems into the first platform.
 | HWR-HMI-005 | A second emergency stop shall be accessible at the patient side; emergency controls shall be visible, consistent, and operable with gloved hands. | Reach and simulated-emergency tests |
 | HWR-HMI-006 | Loss, freezing, severe delay, or mismatch of the operative display shall disable new hazardous motion/energy and cause a distinct alarm. | Display-path fault injection |
 | HWR-HMI-007 | Alarm priority shall map to a required action and time; duplicate alarms may be grouped but unresolved hazards shall not be hidden. | Alarm-system and simulated-use tests |
+| HWR-HMI-008 | A bedside/team display, if provided, shall clearly distinguish read-only status from authoritative controls and shall show the active arm/instrument, motion/energy state, and relevant evidence-state restrictions without replacing console or emergency controls. | Role, comprehension, alarm and display-loss simulated-use tests |
 
 ## 9. Performance budget template
 
