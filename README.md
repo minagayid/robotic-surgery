@@ -7,6 +7,30 @@ model.
 > Status: planning and architecture. No component is yet approved for unattended
 > or safety-critical operation.
 
+This repository also contains a runnable, dependency-free host reference slice.
+It is simulation-only: it does not connect to motors, surgical instruments,
+patients, animals, networks, or real-time safety hardware.
+
+## Run the local reference slice
+
+From the repository root, with Python 3.10 or newer:
+
+```powershell
+python -m unittest discover -s tests -v
+python -m robotic_os demo --json
+python -m robotic_os benchmark --iterations 1000
+```
+
+The demo exercises an approved command, a velocity-clamped command, an expired
+command, and a tamper-evident local event journal. It reports
+`simulation_only` and performs no external actions. Runtime code uses only the
+Python standard library; `requirements.txt` is intentionally empty of packages.
+
+Optional advisory text can use a local OpenAI-compatible server such as Ollama,
+vLLM, llama.cpp, or another loopback service configured through
+`ROBOTX_LOCAL_LLM_BASE_URL`. The client is not part of the motion runtime, and
+its output has no authority over safety decisions or actuation.
+
 ## Mission
 
 Build a modular robotics stack that can:
@@ -60,7 +84,9 @@ Goal -> task planner -> motion planner -> safety supervisor -> controller -> rob
 
 See [Architecture](docs/ARCHITECTURE.md), [Sensor Fusion](docs/SENSOR_FUSION.md),
 [Learning Plan](docs/LEARNING.md), [Security and Safety](SECURITY.md), and the
-[Roadmap](ROADMAP.md).
+[Roadmap](ROADMAP.md). For the runnable boundary and its safety case, see
+[Implementation](docs/IMPLEMENTATION.md) and
+[Phase 1 safety case](docs/PHASE1_SAFETY_CASE.md).
 
 ## Surgical robotics program
 
@@ -111,6 +137,11 @@ The recommended first demonstrator is tabletop pick-and-place:
 
 Success means at least 90% completion across a held-out test layout, zero safety
 limit violations, and reproducible recovery from expected perception failures.
+
+The current code implements only the host-side safety/reference slice behind
+this demonstrator. Hardware integration remains a future phase requiring a
+selected robot, sensors, compute target, independent safety controller, and
+separate verification evidence.
 
 ## Repository policy
 
