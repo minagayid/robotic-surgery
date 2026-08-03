@@ -29,6 +29,11 @@ latency measurements, and a reviewed safety concept.
 **Exit gate:** 24-hour simulated soak with no deadline/safety invariant failure;
 recorded sessions replay to equivalent decisions.
 
+The current repository includes a smaller host-reference slice for this phase:
+typed contracts, fail-closed proposal checks, a deterministic simulator, local
+event journaling, a demo, and fault-focused tests. It is not the full Phase 1
+exit gate and does not provide hard real-time or hardware evidence.
+
 ## Phase 2 — Spatial world model
 
 **Goal:** build a reliable local model before learned control.
