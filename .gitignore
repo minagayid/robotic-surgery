@@ -24,3 +24,9 @@ checkpoints/
 runs/
 outputs/
 *.log
+
+# Keep the source package named "data"; only runtime datasets above are ignored.
+!src/
+!src/robotx/
+!src/robotx/data/
+!src/robotx/data/**/*.py
