@@ -20,6 +20,15 @@ class CliTests(unittest.TestCase):
         result = json.loads(output.getvalue())
         self.assertEqual(result["mode"], "simulation_only")
 
+    def test_five_heart_demo_command_emits_orchestration_result(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            output = io.StringIO()
+            with redirect_stdout(output):
+                exit_code = main(["five-heart-demo", "--journal", str(Path(temp_dir) / "events.jsonl"), "--json"])
+        self.assertEqual(exit_code, 0)
+        result = json.loads(output.getvalue())
+        self.assertEqual(result["orchestration"]["status"], "approved")
+
 
 if __name__ == "__main__":
     unittest.main()

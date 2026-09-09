@@ -42,6 +42,10 @@ exit gate and does not provide hard real-time or hardware evidence.
 - Add sonar or mmWave as redundant proximity/motion evidence.
 - Implement calibration registry, time alignment, occupancy, tracking, and scene
   graph with uncertainty.
+- Prototype four extremity processors and a final atomic orchestrator with
+  disjoint joint ownership.
+- Compare camera/depth evidence with ultrasonic, mmWave, and Wi-Fi CSI evidence;
+  define stale, weak, and contradiction behavior before any safety admission.
 - Run sensor dropout, contradiction, and calibration-shift experiments.
 
 **Exit gate:** no missed test obstacle in the restricted workcell; defined safe

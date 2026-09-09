@@ -18,6 +18,7 @@ From the repository root, with Python 3.10 or newer:
 ```powershell
 python -m unittest discover -s tests -v
 python -m robotic_os demo --json
+python -m robotic_os five-heart-demo --json
 python -m robotic_os benchmark --iterations 1000
 ```
 
@@ -69,15 +70,23 @@ It does not initially replace the computer kernel or hardware drivers.
   value requires.
 - **Replaceable components:** stable typed contracts allow models, simulators,
   sensors, and robot bodies to change independently.
+- **Five-processor movement gate:** left arm, right arm, left leg, and right leg
+  are validated by separate deterministic processors; a fifth orchestrator admits
+  only complete, mutually consistent bundles.
+- **Early context compaction:** optional advisory context is compacted at a
+  configurable 40–50% threshold (45% by default) before it can consume a large
+  model window.
 
 ## Proposed system
 
 ```text
 POV data + robot demos -> offline training -> signed model bundle
                                                |
-Sensors -> time sync -> modality adapters -> fused world model
+RGB/depth + ultrasonic/mmWave/Wi-Fi evidence -> time sync -> modality adapters
+                                           -> fused spatial world model
                                                |
-Goal -> task planner -> motion planner -> safety supervisor -> controller -> robot
+Goal -> task planner -> four extremity processors -> final orchestrator
+                                                       -> safety supervisor -> controller
                                                ^                         |
                                                +---- execution feedback --+
 ```
@@ -138,10 +147,12 @@ The recommended first demonstrator is tabletop pick-and-place:
 Success means at least 90% completion across a held-out test layout, zero safety
 limit violations, and reproducible recovery from expected perception failures.
 
-The current code implements only the host-side safety/reference slice behind
-this demonstrator. Hardware integration remains a future phase requiring a
-selected robot, sensors, compute target, independent safety controller, and
-separate verification evidence.
+The current code implements only a host-side safety/reference slice behind this
+demonstrator. The five-processor path, wave-aware spatial fusion, and context
+policy are deterministic simulations; they are not hardware drivers or clinical
+capabilities. Hardware integration remains a future phase requiring a selected
+robot, sensors, compute target, independent safety controller, and separate
+verification evidence.
 
 ## Repository policy
 

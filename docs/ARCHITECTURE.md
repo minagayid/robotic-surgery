@@ -53,9 +53,44 @@ calibration ID, confidence/uncertainty, and sequence number.
 - `SpatialObservation`: points, detections, ranges, tracks, free-space evidence.
 - `WorldSnapshot`: immutable local view of geometry, semantics, occupancy, and age.
 - `TaskIntent`: user goal plus constraints and authorization.
-- `MotionProposal`: bounded trajectory, expected contacts, validity horizon.
+- `MotionProposal`: bounded trajectory, actuator-group routing, orchestration ID,
+  expected contacts, and validity horizon.
 - `SafetyDecision`: approve, clamp, stop, or reject with machine-readable reason.
 - `ExecutionEvent`: command, observation, decision, result, and provenance.
+
+The host reference also exposes `SpatialObservation` and `SpatialSnapshot` for
+conservative camera-plus-wave evidence fusion. Wi-Fi CSI, ultrasonic, and
+mmWave observations remain probabilistic and never become raw actuator input.
+
+## Five-processor movement gate
+
+Movement is deliberately partitioned into five logical processors (“five hearts”
+as a coordination metaphor, not a biological equivalence):
+
+```mermaid
+flowchart LR
+  LA[Left arm processor]
+  RA[Right arm processor]
+  LL[Left leg processor]
+  RL[Right leg processor]
+  E[Fresh spatial evidence]
+  O[Final motion orchestrator]
+  S[Independent safety supervisor]
+  C[Simulation controller]
+  LA --> O
+  RA --> O
+  LL --> O
+  RL --> O
+  E --> O
+  O --> S --> C
+```
+
+Each extremity processor owns a disjoint joint index set and runs the same
+fail-closed checks independently. The final orchestrator requires all four
+decisions, matching calibration and orchestration IDs, fresh non-contradictory
+spatial evidence, and a single atomic commit boundary. Missing, stale,
+contradictory, or malformed evidence rejects the complete bundle; it never
+guesses a missing extremity command.
 
 The existing robotX `ClipRecord` remains a training-side contract and should not
 be used as a live control message.
@@ -79,10 +114,13 @@ Rates are hypotheses until measured on target hardware.
 2. Freeze a `WorldSnapshot` with freshness requirements.
 3. Produce a symbolic subtask and bounded learned/motion proposal.
 4. Run kinematic, collision, workspace, speed, force, and uncertainty checks.
-5. Safety zone approves, clamps, or rejects.
-6. Execute a short horizon while continuously checking watchdog and perception.
-7. Replan on deviation; stop on stale state, contradiction, or lost heartbeat.
-8. Record the complete event chain for replay and learning.
+5. Four extremity processors validate in isolation.
+6. The final orchestrator admits the complete bundle only if all four pass and
+   spatial evidence is clear.
+7. Safety zone approves, clamps, or rejects the admitted bundle.
+8. Execute a short horizon while continuously checking watchdog and perception.
+9. Replan on deviation; stop on stale state, contradiction, or lost heartbeat.
+10. Record the complete event chain for replay and learning.
 
 ## Deployment shape
 

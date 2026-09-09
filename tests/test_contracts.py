@@ -31,6 +31,10 @@ class ContractTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.make_proposal(target_positions=(math.nan, 0.0))
 
+    def test_motion_proposal_rejects_unknown_schema(self) -> None:
+        with self.assertRaises(ValueError):
+            self.make_proposal(schema_version=999)
+
     def test_robot_state_rejects_mismatched_joint_dimensions(self) -> None:
         with self.assertRaises(ValueError):
             RobotState(
@@ -40,6 +44,17 @@ class ContractTests(unittest.TestCase):
                 heartbeat_seq=1,
                 proximity_m=1.0,
                 sensor_health=(True,),
+            )
+
+    def test_robot_state_rejects_string_sensor_health(self) -> None:
+        with self.assertRaises(ValueError):
+            RobotState(
+                timestamp_ns=1_000,
+                calibration_id="cal-1",
+                joint_positions=(0.0,),
+                heartbeat_seq=1,
+                proximity_m=1.0,
+                sensor_health=("false",),
             )
 
 

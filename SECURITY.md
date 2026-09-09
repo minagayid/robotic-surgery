@@ -33,7 +33,11 @@ Unsigned code, models, calibration, or configuration never execute.
 - Loss of heartbeat, stale state, unknown calibration, corrupt model, or safety
   controller disagreement produces a controlled stop.
 - Learned outputs cannot raise speed, force, torque, workspace, or payload limits.
+- A multi-extremity bundle is admitted only after all four extremity processors
+  and the final orchestrator agree; one failed processor denies the whole bundle.
 - All motion commands have an expiry time and are rejected when late.
+- Spatial clearance is denied when wave evidence is missing, stale, weak, or
+  contradictory; Wi-Fi CSI is never a sole collision-safety input.
 - Startup is motionless until self-tests, calibration identity, and safety
   handshake pass.
 - Recovery after an emergency stop requires a deliberate human action.

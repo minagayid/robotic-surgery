@@ -149,6 +149,24 @@ class SafetySupervisorTests(unittest.TestCase):
         self.assertEqual(decision.status, "rejected")
         self.assertIn("joint_dimension_mismatch", decision.reasons)
 
+    def test_position_limit_is_not_lost_when_velocity_is_in_range(self) -> None:
+        decision = self.supervisor.authorize(
+            self.proposal(target_positions=(2.0, 0.0), velocities=(0.1, 0.1)),
+            self.state,
+            now_ns=self.clock.now_ns(),
+        )
+        self.assertEqual(decision.status, "rejected")
+        self.assertIn("joint_0_position_limit", decision.reasons)
+
+    def test_force_limit_is_not_lost_when_velocity_is_in_range(self) -> None:
+        decision = self.supervisor.authorize(
+            self.proposal(force_limits_n=(6.0, 2.0), velocities=(0.1, 0.1)),
+            self.state,
+            now_ns=self.clock.now_ns(),
+        )
+        self.assertEqual(decision.status, "rejected")
+        self.assertIn("joint_0_force_limit", decision.reasons)
+
 
 if __name__ == "__main__":
     unittest.main()

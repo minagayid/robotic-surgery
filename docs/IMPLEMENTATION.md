@@ -13,6 +13,11 @@ simulation. It provides:
 - a latched emergency-stop state that requires an explicit operator reset;
 - a deterministic clock for reproducible scenarios;
 - a simulated actuator boundary that applies only approved or clamped commands;
+- four independent extremity processors plus a fifth atomic movement orchestrator;
+- conservative fusion of camera/depth and wave-based spatial observations
+  (ultrasonic, mmWave radar, and Wi-Fi CSI); and
+- an explicit advisory-context compaction policy that triggers at 45% by default
+  and blocks oversized requests until an explicit summary is supplied;
 - an append-only local JSONL event journal with a SHA-256 hash chain;
 - a demo, benchmark, and standard-library unittest suite; and
 - an optional loopback-only OpenAI-compatible advisory client.
@@ -22,6 +27,7 @@ simulation. It provides:
 ```powershell
 python -m unittest discover -s tests -v
 python -m robotic_os demo --json
+python -m robotic_os five-heart-demo --json
 python -m robotic_os benchmark --iterations 1000
 ```
 
@@ -36,9 +42,9 @@ patient/animal data, clinical workflow, online learning, deployment mechanism,
 or remote service. It must not be connected to a robot or used to make clinical
 decisions.
 
-The optional language-model client accepts only loopback endpoints and returns
-untrusted advisory text. It is intentionally not imported by the safety or
-runtime modules.
+The optional language-model client accepts only loopback endpoints, enforces the
+early context-compaction policy, and returns untrusted advisory text. It is
+intentionally not imported by the motion or safety path.
 
 ## Next engineering gate
 

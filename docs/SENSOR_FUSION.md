@@ -4,6 +4,10 @@ The goal is not to make every sensor produce an image. The goal is to combine
 independent evidence about occupancy, range, motion, material interaction, and
 uncertainty.
 
+The reference implementation is `robotic_os.spatial.SpatialFusionEngine`. It
+accepts camera, depth, force, lidar, ultrasonic, mmWave radar, and Wi-Fi CSI
+observations, but it never treats an inferred scene as ground truth.
+
 ## Proposed modalities
 
 | Modality | Strength | Important limitation | Initial role |
@@ -20,6 +24,21 @@ Wi-Fi sensing must not be a sole safety sensor or be described as “seeing thro
 everything.” It is probabilistic RF inference that usually requires controlled
 transmitters/receivers, synchronized channel-state measurements, per-environment
 calibration, and careful privacy/legal review.
+
+## Wave-evidence admission rule
+
+For the simulation movement gate, a `clear` spatial snapshot requires:
+
+1. fresh, healthy observations in the requested region and calibration;
+2. at least two independent modality types;
+3. at least one wave modality (ultrasonic, mmWave radar, or Wi-Fi CSI); and
+4. every contributing clear observation above the configured confidence floor.
+
+An occupied observation, stale source, calibration mismatch, sensor fault, weak
+modality, or high-confidence contradiction yields `occupied` or `unknown` with
+`stop_required=true`. A camera-only result cannot clear the gate. These are
+software acceptance rules for simulation, not a claim that any sensor is safe for
+clinical or physical deployment.
 
 ## Fusion pipeline
 
