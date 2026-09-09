@@ -12,6 +12,10 @@
 | D5 | Surgeon teleoperation and clinical investigation | Target-system behavior and outcomes | High cost, privacy and risk |
 | D6 | Authorized postmarket cases | Monitoring and improvement hypotheses | Selection bias; changes require control |
 
+The [offline dataset catalog](../DATASET_CATALOG.md) maps currently identified
+POV, endoscopic, OR-context, phantom, and ex-vivo sources to these tiers. It is
+an inventory, not a blanket permission to download or deploy them.
+
 ## Required synchronized channels
 
 - stereo/endoscopic and external video where approved;
@@ -36,6 +40,13 @@
   resistant patient/site/operator splits.
 - Evaluate representation across anatomy, demographics, pathology, site, equipment,
   surgeon experience, species, and body size where clinically relevant.
+- Register every locally cached release with `OfflineDatasetManifest`, verify
+  the archive SHA-256 before admission, and preserve the exact provider release
+  and permitted-use interpretation.
+- Quarantine archives with missing provenance, unclear consent, unresolved
+  de-identification, license restrictions, label leakage, or a checksum
+  mismatch. A manifest's ethics text is an evidence pointer, not an IRB or
+  data-custodian approval.
 
 ## Learning strategy
 
@@ -50,6 +61,12 @@
 8. Distill/quantize only after equivalence and worst-case latency evaluation.
 9. Freeze and sign model, software, calibration, configuration, and evidence as one
    release unit.
+
+POV and endoscopic video may train representation, workflow, tool, and scene
+models. It must not be used as a direct motor-command target without a separate
+calibration, dynamics, tissue/contact, force, and clinical validation chain.
+Public data cannot supply the missing target-robot wave-sensor ground truth;
+that channel requires controlled collection on the intended platform.
 
 No online weight update occurs during clinical operation. Case data enters a
 separate review pipeline and can influence only a future controlled release.

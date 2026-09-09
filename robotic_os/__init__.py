@@ -14,6 +14,7 @@ from .contracts import (
     SpatialObservation,
     SpatialSnapshot,
 )
+from .data import DatasetAdmissionDecision, OfflineDatasetManifest, OfflineDatasetRegistry
 from .events import EventJournal
 from .movement import (
     EXTREMITY_PROCESSORS,
@@ -33,11 +34,14 @@ __all__ = [
     "AdvisoryContext",
     "CompactionDecision",
     "ContextCompactionPolicy",
+    "DatasetAdmissionDecision",
     "EXTREMITY_PROCESSORS",
     "ExtremityProcessor",
     "FiveHeartOrchestrator",
     "MotionProposal",
     "MonotonicClock",
+    "OfflineDatasetManifest",
+    "OfflineDatasetRegistry",
     "OfflineRuntime",
     "ORCHESTRATOR_PROCESSOR",
     "OrchestrationDecision",

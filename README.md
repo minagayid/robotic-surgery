@@ -95,7 +95,8 @@ See [Architecture](docs/ARCHITECTURE.md), [Sensor Fusion](docs/SENSOR_FUSION.md)
 [Learning Plan](docs/LEARNING.md), [Security and Safety](SECURITY.md), and the
 [Roadmap](ROADMAP.md). For the runnable boundary and its safety case, see
 [Implementation](docs/IMPLEMENTATION.md) and
-[Phase 1 safety case](docs/PHASE1_SAFETY_CASE.md).
+[Phase 1 safety case](docs/PHASE1_SAFETY_CASE.md). The offline surgical-data
+inventory and ingestion controls are in the [dataset catalog](docs/DATASET_CATALOG.md).
 
 ## Surgical robotics program
 
@@ -107,7 +108,8 @@ procedure segment at a time. It does not authorize patient or animal use.
 Start with the [Surgical Program Charter](SURGICAL_PROGRAM.md), then review the
 [medical architecture](docs/surgical/ARCHITECTURE.md),
 [procedure portfolio](docs/surgical/PROCEDURE_PORTFOLIO.md),
-[data and training plan](docs/surgical/DATA_TRAINING.md),
+[data and training plan](docs/surgical/DATA_TRAINING.md) and its
+[public dataset catalog](docs/DATASET_CATALOG.md),
 [validation pathway](docs/surgical/VALIDATION_CLINICAL.md),
 [quality and regulatory plan](docs/surgical/REGULATORY_QUALITY.md),
 [operating model](docs/surgical/OPERATIONS.md), and

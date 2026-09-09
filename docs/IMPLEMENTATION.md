@@ -19,6 +19,9 @@ simulation. It provides:
 - an explicit advisory-context compaction policy that triggers at 45% by default
   and blocks oversized requests until an explicit summary is supplied;
 - an append-only local JSONL event journal with a SHA-256 hash chain;
+- an offline dataset manifest/registry that requires provenance, de-identification,
+  permitted-use checks, and local archive checksum verification before a bounded
+  research training workflow can admit data; and
 - a demo, benchmark, and standard-library unittest suite; and
 - an optional loopback-only OpenAI-compatible advisory client.
 
@@ -39,8 +42,10 @@ Git. Pass `--journal <path>` to select another local path.
 This milestone contains no hardware drivers, actuator protocol, network
 middleware, ROS dependency, real-time guarantee, surgical procedure logic,
 patient/animal data, clinical workflow, online learning, deployment mechanism,
-or remote service. It must not be connected to a robot or used to make clinical
-decisions.
+or remote service. The dataset registry stores metadata and verifies local
+archives; it does not contain or download clinical data and does not replace
+ethics, privacy, license, or data-use review. The package must not be connected
+to a robot or used to make clinical decisions.
 
 The optional language-model client accepts only loopback endpoints, enforces the
 early context-compaction policy, and returns untrusted advisory text. It is
