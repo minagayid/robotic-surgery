@@ -5,7 +5,7 @@ import unittest
 from pathlib import Path
 
 from robotic_os.benchmark import run_benchmark
-from robotic_os.scenarios import run_demo
+from robotic_os.scenarios import run_demo, run_five_heart_demo
 
 
 class ScenarioTests(unittest.TestCase):
@@ -21,6 +21,14 @@ class ScenarioTests(unittest.TestCase):
         self.assertEqual(result["iterations"], 50)
         self.assertEqual(result["approved"], 50)
         self.assertGreaterEqual(result["p99_us"], result["p50_us"])
+
+    def test_five_heart_demo_runs_wave_gated_atomic_bundle(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            result = run_five_heart_demo(Path(temp_dir) / "five-heart.jsonl")
+        self.assertEqual(result["orchestration"]["status"], "approved")
+        self.assertEqual(len(result["orchestration"]["processor_decisions"]), 4)
+        self.assertEqual(result["spatial_snapshot"]["status"], "clear")
+        self.assertTrue(result["journal_verified"])
 
 
 if __name__ == "__main__":

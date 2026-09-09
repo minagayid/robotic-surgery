@@ -55,7 +55,14 @@ class SafetySupervisor:
             effective_velocities=velocities or tuple(0.0 for _ in proposal.velocities),
         )
 
-    def authorize(self, proposal: MotionProposal, state: RobotState, *, now_ns: int) -> SafetyDecision:
+    def authorize(
+        self,
+        proposal: MotionProposal,
+        state: RobotState,
+        *,
+        now_ns: int,
+        commit_sequence: bool = True,
+    ) -> SafetyDecision:
         if self._stop_latched or state.emergency_stop:
             if state.emergency_stop:
                 self._stop_latched = True
@@ -103,14 +110,29 @@ class SafetySupervisor:
             if force > self.limits.max_force_n[index]:
                 reasons.append(f"joint_{index}_force_limit")
 
+        # Keep hard-limit reasons separate from advisory velocity changes. The
+        # previous implementation overwrote `reasons` here, which could turn a
+        # position or force violation into an approved command.
+        if reasons:
+            return self._decision("rejected", proposal, now_ns, reasons)
+
+        clamp_reasons: list[str] = []
         clamped = tuple(
             max(-limit, min(limit, velocity))
             for velocity, limit in zip(proposal.velocities, self.limits.max_velocity)
         )
-        reasons = [
+        clamp_reasons.extend(
             f"joint_{index}_velocity_clamped"
             for index, (requested, effective) in enumerate(zip(proposal.velocities, clamped))
             if requested != effective
-        ]
-        self._last_sequences[proposal.source_id] = proposal.sequence
-        return self._decision("clamped" if reasons else "approved", proposal, now_ns, reasons, clamped)
+        )
+        if commit_sequence:
+            self._last_sequences[proposal.source_id] = proposal.sequence
+        return self._decision("clamped" if clamp_reasons else "approved", proposal, now_ns, clamp_reasons, clamped)
+
+    def commit_sequence(self, source_id: str, sequence: int) -> bool:
+        """Commit a validated sequence at an orchestration transaction boundary."""
+        if source_id not in self.allowed_sources or sequence <= self._last_sequences.get(source_id, 0):
+            return False
+        self._last_sequences[source_id] = sequence
+        return True

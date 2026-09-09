@@ -10,8 +10,10 @@ import json
 import os
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
+
+from .context import CompactionDecision, ContextCompactionPolicy
 
 
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "::1"}
@@ -23,6 +25,7 @@ class LocalModelClient:
     model: str = "gpt-oss-20b"
     api_key: str = ""
     timeout: int = 30
+    context_policy: ContextCompactionPolicy = field(default_factory=ContextCompactionPolicy)
 
     def __post_init__(self) -> None:
         if not self.model.strip():
@@ -62,9 +65,20 @@ class LocalModelClient:
             timeout=timeout,
         )
 
+    def context_budget(self, prompt: str, *, system: str = "") -> CompactionDecision:
+        return self.context_policy.assess_text(system, prompt)
+
     def complete(self, prompt: str, *, system: str = "") -> str:
         if not self.available:
             raise RuntimeError("local model is not configured")
+        if not prompt.strip():
+            raise ValueError("prompt must not be empty")
+        budget = self.context_budget(prompt, system=system)
+        if budget.compaction_required:
+            raise RuntimeError(
+                "advisory context compaction is required before continuing "
+                f"(estimated_ratio={budget.usage_ratio:.3f})"
+            )
         messages: list[dict[str, str]] = []
         if system:
             messages.append({"role": "system", "content": system})

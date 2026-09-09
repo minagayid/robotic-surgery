@@ -4,6 +4,7 @@ import os
 import unittest
 from unittest.mock import patch
 
+from robotic_os.context import ContextCompactionPolicy
 from robotic_os.local_model import LocalModelClient
 
 
@@ -20,6 +21,15 @@ class LocalModelTests(unittest.TestCase):
     def test_remote_endpoint_is_rejected(self) -> None:
         with self.assertRaises(ValueError):
             LocalModelClient("https://example.com/v1", "model")
+
+    def test_large_advisory_request_requires_compaction_before_network_call(self) -> None:
+        client = LocalModelClient(
+            "http://127.0.0.1:11434/v1",
+            "model",
+            context_policy=ContextCompactionPolicy(max_tokens=100),
+        )
+        with self.assertRaisesRegex(RuntimeError, "compaction"):
+            client.complete("x" * 200)
 
 
 if __name__ == "__main__":

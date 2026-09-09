@@ -9,6 +9,20 @@ from typing import Any, Iterable
 
 SCHEMA_VERSION = 1
 
+SUPPORTED_SPATIAL_MODALITIES = frozenset(
+    {
+        "rgb",
+        "depth",
+        "stereo",
+        "force_torque",
+        "ultrasonic",
+        "mmwave_radar",
+        "wifi_csi",
+        "lidar",
+    }
+)
+WAVE_SPATIAL_MODALITIES = frozenset({"ultrasonic", "mmwave_radar", "wifi_csi"})
+
 
 def _finite(value: float, name: str) -> float:
     number = float(value)
@@ -38,13 +52,23 @@ class MotionProposal:
     target_positions: tuple[float, ...]
     velocities: tuple[float, ...]
     force_limits_n: tuple[float, ...]
+    actuator_group: str = ""
+    orchestration_id: str = ""
     schema_version: int = SCHEMA_VERSION
 
     def __post_init__(self) -> None:
+        if self.schema_version != SCHEMA_VERSION:
+            raise ValueError("unsupported motion proposal schema")
         if not self.source_id or len(self.source_id) > 120:
             raise ValueError("source_id must be a non-empty short identifier")
         if not self.calibration_id or len(self.calibration_id) > 120:
             raise ValueError("calibration_id must be a non-empty short identifier")
+        if len(self.actuator_group) > 80 or len(self.orchestration_id) > 120:
+            raise ValueError("motion routing identifiers are too long")
+        if self.actuator_group and not self.actuator_group.strip():
+            raise ValueError("actuator_group must not be whitespace")
+        if self.orchestration_id and not self.orchestration_id.strip():
+            raise ValueError("orchestration_id must not be whitespace")
         if self.sequence < 1:
             raise ValueError("sequence must be positive")
         if self.created_at_ns < 0 or self.expires_at_ns <= self.created_at_ns:
@@ -74,6 +98,8 @@ class MotionProposal:
             "target_positions": list(self.target_positions),
             "velocities": list(self.velocities),
             "force_limits_n": list(self.force_limits_n),
+            "actuator_group": self.actuator_group,
+            "orchestration_id": self.orchestration_id,
         }
 
     @classmethod
@@ -90,6 +116,8 @@ class MotionProposal:
             target_positions=tuple(data["target_positions"]),
             velocities=tuple(data["velocities"]),
             force_limits_n=tuple(data["force_limits_n"]),
+            actuator_group=str(data.get("actuator_group", "")),
+            orchestration_id=str(data.get("orchestration_id", "")),
             schema_version=SCHEMA_VERSION,
         )
 
@@ -112,7 +140,7 @@ class RobotState:
         if self.heartbeat_seq < 0:
             raise ValueError("heartbeat_seq must not be negative")
         positions = _numbers(self.joint_positions, "joint_positions")
-        health = tuple(bool(value) for value in self.sensor_health)
+        health = tuple(self._strict_bool(value, "sensor_health") for value in self.sensor_health)
         if len(positions) != len(health):
             raise ValueError("joint_positions and sensor_health must match")
         proximity = _finite(self.proximity_m, "proximity_m")
@@ -121,6 +149,14 @@ class RobotState:
         object.__setattr__(self, "joint_positions", positions)
         object.__setattr__(self, "sensor_health", health)
         object.__setattr__(self, "proximity_m", proximity)
+        if not isinstance(self.emergency_stop, bool):
+            raise ValueError("emergency_stop must be a boolean")
+
+    @staticmethod
+    def _strict_bool(value: Any, name: str) -> bool:
+        if not isinstance(value, bool):
+            raise ValueError(f"{name} values must be booleans")
+        return value
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -179,4 +215,101 @@ class SafetyDecision:
             "sequence": self.sequence,
             "timestamp_ns": self.timestamp_ns,
             "effective_velocities": list(self.effective_velocities),
+        }
+
+
+@dataclass(frozen=True)
+class SpatialObservation:
+    """One bounded spatial measurement; it is evidence, never a scene fact."""
+
+    source_id: str
+    modality: str
+    region_id: str
+    timestamp_ns: int
+    calibration_id: str
+    occupied: bool
+    confidence: float
+    range_m: float | None = None
+    healthy: bool = True
+    sequence: int = 1
+
+    def __post_init__(self) -> None:
+        if not self.source_id or len(self.source_id) > 120:
+            raise ValueError("source_id must be a non-empty short identifier")
+        if self.modality not in SUPPORTED_SPATIAL_MODALITIES:
+            raise ValueError("unsupported spatial modality")
+        if not self.region_id or len(self.region_id) > 120:
+            raise ValueError("region_id must be a non-empty short identifier")
+        if self.timestamp_ns < 0 or self.sequence < 1:
+            raise ValueError("spatial observation sequence/timestamp is invalid")
+        if not self.calibration_id:
+            raise ValueError("calibration_id must not be empty")
+        if not isinstance(self.occupied, bool) or not isinstance(self.healthy, bool):
+            raise ValueError("occupied and healthy must be booleans")
+        confidence = _finite(self.confidence, "confidence")
+        if not 0.0 <= confidence <= 1.0:
+            raise ValueError("confidence must be between 0 and 1")
+        if self.range_m is not None:
+            distance = _finite(self.range_m, "range_m")
+            if distance < 0:
+                raise ValueError("range_m must not be negative")
+            object.__setattr__(self, "range_m", distance)
+        object.__setattr__(self, "confidence", confidence)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "source_id": self.source_id,
+            "modality": self.modality,
+            "region_id": self.region_id,
+            "timestamp_ns": self.timestamp_ns,
+            "calibration_id": self.calibration_id,
+            "occupied": self.occupied,
+            "confidence": self.confidence,
+            "range_m": self.range_m,
+            "healthy": self.healthy,
+            "sequence": self.sequence,
+        }
+
+
+@dataclass(frozen=True)
+class SpatialSnapshot:
+    """Conservative fusion output consumed by motion orchestration."""
+
+    timestamp_ns: int
+    calibration_id: str
+    region_id: str
+    status: str
+    confidence: float
+    modality_ids: tuple[str, ...]
+    conflict: bool = False
+    stop_required: bool = True
+    reasons: tuple[str, ...] = ()
+
+    def __post_init__(self) -> None:
+        if self.timestamp_ns < 0 or not self.calibration_id or not self.region_id:
+            raise ValueError("spatial snapshot identity is invalid")
+        if self.status not in {"clear", "occupied", "unknown"}:
+            raise ValueError("spatial snapshot status is invalid")
+        confidence = _finite(self.confidence, "confidence")
+        if not 0.0 <= confidence <= 1.0:
+            raise ValueError("confidence must be between 0 and 1")
+        if not self.modality_ids and self.status != "unknown":
+            raise ValueError("clear or occupied snapshot must include modality evidence")
+        if not isinstance(self.conflict, bool) or not isinstance(self.stop_required, bool):
+            raise ValueError("conflict and stop_required must be booleans")
+        object.__setattr__(self, "confidence", confidence)
+        object.__setattr__(self, "modality_ids", tuple(str(item) for item in self.modality_ids))
+        object.__setattr__(self, "reasons", tuple(str(item) for item in self.reasons))
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "timestamp_ns": self.timestamp_ns,
+            "calibration_id": self.calibration_id,
+            "region_id": self.region_id,
+            "status": self.status,
+            "confidence": self.confidence,
+            "modality_ids": list(self.modality_ids),
+            "conflict": self.conflict,
+            "stop_required": self.stop_required,
+            "reasons": list(self.reasons),
         }
