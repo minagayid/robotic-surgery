@@ -75,6 +75,23 @@ class OfflineDatasetRegistryTests(unittest.TestCase):
         self.assertEqual(decision.status, "rejected")
         self.assertIn("archive_not_verified", decision.reasons)
 
+    def test_tampered_archive_is_rejected_by_admission(self) -> None:
+        payload = b"approved-offline-dataset-fixture"
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = Path(temp_dir) / "dataset.bin"
+            path.write_bytes(payload + b"-tampered")
+            registry = OfflineDatasetRegistry()
+            registry.register(
+                self.manifest(sha256=hashlib.sha256(payload).hexdigest())
+            )
+            decision = registry.admit(
+                "example-clinical-pov",
+                intended_use="perception",
+                archive_path=path,
+            )
+            self.assertEqual(decision.status, "rejected")
+            self.assertIn("archive_checksum_mismatch", decision.reasons)
+
 
 if __name__ == "__main__":
     unittest.main()
