@@ -11,6 +11,7 @@ from .events import EventJournal
 from .movement import EXTREMITY_PROCESSORS, ExtremityProcessor, FiveHeartOrchestrator
 from .runtime import OfflineRuntime
 from .spatial import SpatialFusionEngine
+from .workcell import DEFAULT_WORKCELL_PROFILE
 
 
 def _runtime(journal_path: Path | str) -> tuple[OfflineRuntime, DeterministicClock]:
@@ -175,6 +176,7 @@ def run_five_heart_demo(journal_path: Path | str) -> dict[str, Any]:
     )
     return {
         "mode": "simulation_only",
+        "workcell": DEFAULT_WORKCELL_PROFILE.to_dict(),
         "architecture": {
             "extremity_processors": list(EXTREMITY_PROCESSORS),
             "regional_coordinators": {

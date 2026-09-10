@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Mapping
 
 from .clock import DeterministicClock, MonotonicClock
@@ -9,6 +10,8 @@ from .contracts import MotionProposal, RobotState, SafetyDecision, SafetyLimits,
 from .events import EventJournal
 from .movement import FiveHeartOrchestrator, OrchestrationDecision
 from .safety import SafetySupervisor
+from .hardware_safety import IndependentSafetyController
+from .telemetry import TelemetryRecord
 
 
 class OfflineRuntime:
@@ -26,6 +29,10 @@ class OfflineRuntime:
         self.supervisor = SafetySupervisor(
             limits=limits,
             allowed_sources=allowed_sources,
+            heartbeat_timeout_ns=100_000_000,
+        )
+        self.independent_safety = IndependentSafetyController(
+            limits=limits,
             heartbeat_timeout_ns=100_000_000,
         )
         self.journal = journal
@@ -54,7 +61,25 @@ class OfflineRuntime:
             self.journal.append({"type": "decision", "proposal": proposal.to_dict(), "decision": decision.to_dict()})
             return decision
         decision = self.supervisor.authorize(proposal, self.state, now_ns=now_ns)
-        self.journal.append({"type": "decision", "proposal": proposal.to_dict(), "decision": decision.to_dict()})
+        independent_decision = None
+        if decision.status in {"approved", "clamped"}:
+            gated_proposal = replace(proposal, velocities=decision.effective_velocities)
+            independent_decision = self.independent_safety.authorize(gated_proposal, self.state, now_ns=now_ns)
+            if independent_decision.status != "approved":
+                decision = SafetyDecision(
+                    independent_decision.status,
+                    independent_decision.reasons,
+                    proposal.source_id,
+                    proposal.sequence,
+                    now_ns,
+                    tuple(0.0 for _ in proposal.velocities),
+                )
+        self.journal.append({
+            "type": "decision",
+            "proposal": proposal.to_dict(),
+            "decision": decision.to_dict(),
+            "independent_safety": independent_decision.to_dict() if independent_decision else None,
+        })
         if decision.status in {"approved", "clamped"}:
             self.state = RobotState(
                 timestamp_ns=now_ns,
@@ -77,6 +102,7 @@ class OfflineRuntime:
     ) -> OrchestrationDecision:
         """Submit a bundle through regional coordinators and the main gate."""
         now_ns = self.clock.now_ns()
+        independent_decisions = []
         if self.state is None:
             decision = OrchestrationDecision(
                 "stopped",
@@ -89,6 +115,7 @@ class OfflineRuntime:
         elif self.supervisor.stop_latched or self.state.emergency_stop:
             if self.state.emergency_stop:
                 self.supervisor.trigger_emergency_stop()
+                self.independent_safety.trigger_emergency_stop()
             decision = OrchestrationDecision(
                 "stopped",
                 "",
@@ -134,6 +161,25 @@ class OfflineRuntime:
                                 global_reasons.append(f"runtime_joint_{index}_force_limit")
                             if abs(velocity) > self.supervisor.limits.max_velocity[index]:
                                 global_reasons.append(f"runtime_joint_{index}_velocity_limit")
+                independent_decisions = []
+                for item in decision.processor_decisions:
+                    proposal = proposals[item.processor_id]
+                    gated_proposal = replace(proposal, velocities=item.decision.effective_velocities)
+                    gate = self.independent_safety.authorize(
+                        gated_proposal,
+                        self.state,
+                        now_ns=now_ns,
+                        commit_sequence=False,
+                        joint_indices=orchestrator.processors[item.processor_id].joint_indices,
+                    )
+                    independent_decisions.append(gate)
+                    if gate.status != "approved":
+                        global_reasons.extend(f"{item.processor_id}:{reason}" for reason in gate.reasons)
+                if not global_reasons:
+                    for item in decision.processor_decisions:
+                        proposal = proposals[item.processor_id]
+                        if not self.independent_safety.commit_sequence(proposal.source_id, proposal.sequence):
+                            global_reasons.append(f"{item.processor_id}:independent_sequence_commit_failed")
                 if global_reasons:
                     decision = OrchestrationDecision(
                         "rejected",
@@ -142,11 +188,13 @@ class OfflineRuntime:
                         tuple(dict.fromkeys(global_reasons)),
                         decision.processor_decisions,
                         (),
+                        decision.coordinator_decisions,
                     )
         self.journal.append({
             "type": "orchestration_decision",
             "decision": decision.to_dict(),
             "spatial_snapshot": spatial_snapshot.to_dict() if spatial_snapshot else None,
+            "independent_safety": [item.to_dict() for item in independent_decisions],
         })
         if self.state is not None and decision.status in {"approved", "clamped"}:
             self.state = RobotState(
@@ -168,10 +216,26 @@ class OfflineRuntime:
 
     def trigger_emergency_stop(self) -> None:
         self.supervisor.trigger_emergency_stop()
+        self.independent_safety.trigger_emergency_stop()
         self._fresh_state_required = True
         self.journal.append({"type": "emergency_stop", "status": "latched"})
 
     def reset(self, operator_id: str) -> bool:
         accepted = self.supervisor.reset(operator_id)
+        if accepted:
+            accepted = self.independent_safety.reset(operator_id)
         self.journal.append({"type": "operator_reset", "accepted": accepted})
         return accepted
+
+    def telemetry(self, event_type: str = "state") -> TelemetryRecord:
+        """Return a versioned record suitable for local replay or database ingest."""
+        if self.state is None:
+            raise ValueError("cannot emit telemetry before the first robot state")
+        return TelemetryRecord(
+            event_type=event_type,
+            timestamp_ns=self.clock.now_ns(),
+            source_id="robotx.offline-runtime",
+            calibration_id=self.state.calibration_id,
+            safety_status="stopped" if self.supervisor.stop_latched else "ready",
+            payload={"state": self.state.to_dict()},
+        )

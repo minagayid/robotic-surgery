@@ -15,6 +15,13 @@ simulation. It provides:
 - a simulated actuator boundary that applies only approved or clamped commands;
 - four independent extremity processors, upper/lower regional coordinators, and a
   fifth logical main movement orchestrator;
+- a concrete `robotx-reference-four-extremity-v1` workcell profile with explicit
+  frames, rates, simulator, compute target, and no-hardware actuation policy;
+- an independent final safety-gate reference model exercised after host-side
+  validation, plus deterministic stale-heartbeat, sensor, and emergency-stop
+  fault injection helpers;
+- versioned JSON telemetry records suitable for local replay or a downstream
+  ingest adapter;
 - conservative fusion of camera/depth and wave-based spatial observations
   (ultrasonic, mmWave radar, and Wi-Fi CSI); and
 - an explicit advisory-context compaction policy that triggers at 45% by default
@@ -32,6 +39,7 @@ simulation. It provides:
 python -m unittest discover -s tests -v
 python -m robotic_os demo --json
 python -m robotic_os five-heart-demo --json
+python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
 ```
 
@@ -54,8 +62,9 @@ intentionally not imported by the motion or safety path.
 
 ## Next engineering gate
 
-Before hardware work, select and document one robot/workcell, coordinate-frame
-convention, compute target, simulator, middleware, independent safety controller,
-sensor set, and hazard-analysis owner. Then add hardware-in-loop adapters behind
-the existing contracts. The host reference runtime is evidence for software
-behavior only; it is not evidence of certified safety or hard real-time timing.
+The concrete profile and independent gate close the software-side selection gate
+for repeatable SIL tests. Hardware-in-loop work is still a separate gate: select
+the actual robot and sensors, map these contracts to a certified safety PLC/drive
+function, define the hazard-analysis owner, and add adapters behind the existing
+contracts. The host reference runtime is evidence for software behavior only; it
+is not evidence of certified safety or hard real-time timing.

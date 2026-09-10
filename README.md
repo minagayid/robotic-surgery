@@ -19,6 +19,7 @@ From the repository root, with Python 3.10 or newer:
 python -m unittest discover -s tests -v
 python -m robotic_os demo --json
 python -m robotic_os five-heart-demo --json
+python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
 ```
 
@@ -150,12 +151,15 @@ The recommended first demonstrator is tabletop pick-and-place:
 Success means at least 90% completion across a held-out test layout, zero safety
 limit violations, and reproducible recovery from expected perception failures.
 
-The current code implements only a host-side safety/reference slice behind this
-demonstrator. The hierarchical five-processor path, wave-aware spatial fusion, and context
-policy are deterministic simulations; they are not hardware drivers or clinical
-capabilities. Hardware integration remains a future phase requiring a selected
-robot, sensors, compute target, independent safety controller, and separate
-verification evidence.
+The current code implements a host-side safety/reference slice behind this
+demonstrator. The `robotx-reference-four-extremity-v1` profile now fixes the
+simulation, coordinate frames, rates, compute target, and no-hardware policy.
+Every accepted command also passes an independent final safety-gate model, and
+versioned telemetry can be written for local replay or downstream ingest.
+These are SIL/reference controls, not hardware drivers or clinical capabilities.
+Hardware-in-loop integration remains a separate phase requiring the selected
+robot, sensors, certified safety controller, and independent verification
+evidence.
 
 ## Repository policy
 

@@ -32,7 +32,11 @@ from .movement import (
 )
 from .runtime import OfflineRuntime
 from .safety import SafetySupervisor
+from .hardware_safety import IndependentSafetyController
 from .spatial import SpatialFusionEngine
+from .faults import FaultInjector
+from .telemetry import TelemetryRecord, append_jsonl, read_jsonl
+from .workcell import DEFAULT_WORKCELL_PROFILE, WorkcellProfile
 
 __all__ = [
     "DeterministicClock",
@@ -53,6 +57,8 @@ __all__ = [
     "OfflineDatasetManifest",
     "OfflineDatasetRegistry",
     "OfflineRuntime",
+    "IndependentSafetyController",
+    "FaultInjector",
     "ORCHESTRATOR_PROCESSOR",
     "OrchestrationDecision",
     "ProcessorDecision",
@@ -65,4 +71,9 @@ __all__ = [
     "SpatialFusionEngine",
     "SpatialObservation",
     "SpatialSnapshot",
+    "TelemetryRecord",
+    "append_jsonl",
+    "read_jsonl",
+    "WorkcellProfile",
+    "DEFAULT_WORKCELL_PROFILE",
 ]
