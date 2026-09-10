@@ -17,12 +17,18 @@ from .contracts import (
 from .data import DatasetAdmissionDecision, OfflineDatasetManifest, OfflineDatasetRegistry
 from .events import EventJournal
 from .movement import (
+    COORDINATION_GROUPS,
     EXTREMITY_PROCESSORS,
+    LOWER_COORDINATOR_PROCESSOR,
+    MAIN_COORDINATOR_PROCESSOR,
     ORCHESTRATOR_PROCESSOR,
+    UPPER_COORDINATOR_PROCESSOR,
+    CoordinatorDecision,
     ExtremityProcessor,
     FiveHeartOrchestrator,
     OrchestrationDecision,
     ProcessorDecision,
+    RegionalCoordinator,
 )
 from .runtime import OfflineRuntime
 from .safety import SafetySupervisor
@@ -34,8 +40,12 @@ __all__ = [
     "AdvisoryContext",
     "CompactionDecision",
     "ContextCompactionPolicy",
+    "COORDINATION_GROUPS",
     "DatasetAdmissionDecision",
     "EXTREMITY_PROCESSORS",
+    "UPPER_COORDINATOR_PROCESSOR",
+    "LOWER_COORDINATOR_PROCESSOR",
+    "MAIN_COORDINATOR_PROCESSOR",
     "ExtremityProcessor",
     "FiveHeartOrchestrator",
     "MotionProposal",
@@ -46,6 +56,8 @@ __all__ = [
     "ORCHESTRATOR_PROCESSOR",
     "OrchestrationDecision",
     "ProcessorDecision",
+    "CoordinatorDecision",
+    "RegionalCoordinator",
     "RobotState",
     "SafetyDecision",
     "SafetyLimits",

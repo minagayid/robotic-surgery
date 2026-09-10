@@ -74,23 +74,28 @@ flowchart LR
   LL[Left leg processor]
   RL[Right leg processor]
   E[Fresh spatial evidence]
-  O[Final motion orchestrator]
+  U[Upper coordinating processor]
+  L[Lower coordinating processor]
+  O[Main motion orchestrator]
   S[Independent safety supervisor]
   C[Simulation controller]
-  LA --> O
-  RA --> O
-  LL --> O
-  RL --> O
+  LA --> U
+  RA --> U
+  LL --> L
+  RL --> L
+  U --> O
+  L --> O
   E --> O
   O --> S --> C
 ```
 
 Each extremity processor owns a disjoint joint index set and runs the same
-fail-closed checks independently. The final orchestrator requires all four
-decisions, matching calibration and orchestration IDs, fresh non-contradictory
-spatial evidence, and a single atomic commit boundary. Missing, stale,
-contradictory, or malformed evidence rejects the complete bundle; it never
-guesses a missing extremity command.
+fail-closed checks independently. The upper and lower coordinating processors
+then aggregate their local pair without committing state. The main orchestrator
+requires both regional decisions, all four local decisions, matching calibration
+and orchestration IDs, fresh non-contradictory spatial evidence, and a single
+atomic commit boundary. Missing, stale, contradictory, or malformed evidence
+rejects the complete bundle; it never guesses a missing extremity command.
 
 The existing robotX `ClipRecord` remains a training-side contract and should not
 be used as a live control message.
@@ -115,12 +120,14 @@ Rates are hypotheses until measured on target hardware.
 3. Produce a symbolic subtask and bounded learned/motion proposal.
 4. Run kinematic, collision, workspace, speed, force, and uncertainty checks.
 5. Four extremity processors validate in isolation.
-6. The final orchestrator admits the complete bundle only if all four pass and
-   spatial evidence is clear.
-7. Safety zone approves, clamps, or rejects the admitted bundle.
-8. Execute a short horizon while continuously checking watchdog and perception.
-9. Replan on deviation; stop on stale state, contradiction, or lost heartbeat.
-10. Record the complete event chain for replay and learning.
+6. Upper/lower coordinating processors aggregate their local pairs without
+   committing state.
+7. The main orchestrator admits the complete bundle only if all four local
+   decisions, both regional decisions, and spatial evidence are clear.
+8. Safety zone approves, clamps, or rejects the admitted bundle.
+9. Execute a short horizon while continuously checking watchdog and perception.
+10. Replan on deviation; stop on stale state, contradiction, or lost heartbeat.
+11. Record the complete event chain for replay and learning.
 
 ## Deployment shape
 

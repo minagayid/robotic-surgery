@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from robotic_os.contracts import MotionProposal, RobotState, SafetyLimits
+from robotic_os.contracts import MotionProposal, RobotState, SafetyLimits, SpatialObservation
 from robotic_os.movement import EXTREMITY_PROCESSORS, ExtremityProcessor, FiveHeartOrchestrator
 from robotic_os.spatial import SpatialFusionEngine
 
@@ -81,6 +81,10 @@ class FiveHeartOrchestratorTests(unittest.TestCase):
         self.assertEqual(decision.status, "approved")
         self.assertEqual(len(decision.processor_decisions), 4)
         self.assertEqual(decision.effective_target_positions, (0.1, -0.1) * 4)
+        self.assertEqual(
+            [(item.coordinator_id, item.status) for item in decision.coordinator_decisions],
+            [("upper_coordinating_processor", "approved"), ("lower_coordinating_processor", "approved")],
+        )
 
     def test_missing_extremity_is_rejected_by_final_processor(self) -> None:
         proposals = self.proposals()
@@ -101,6 +105,34 @@ class FiveHeartOrchestratorTests(unittest.TestCase):
         )
         self.assertEqual(decision.status, "rejected")
         self.assertTrue(any("left_arm:joint_0_position_limit" in reason for reason in decision.reasons))
+        regional = {item.coordinator_id: item for item in decision.coordinator_decisions}
+        self.assertEqual(regional["upper_coordinating_processor"].status, "rejected")
+        self.assertEqual(regional["lower_coordinating_processor"].status, "approved")
+
+    def test_conflicting_spatial_evidence_stops_before_regional_commit(self) -> None:
+        conflicting = SpatialFusionEngine().fuse(
+            [
+                self.observation("ultrasonic"),
+                SpatialObservation(
+                    source_id="mmwave-radar-1",
+                    modality="mmwave_radar",
+                    region_id="workcell",
+                    timestamp_ns=1_000,
+                    calibration_id="cal-1",
+                    occupied=True,
+                    confidence=0.95,
+                ),
+            ],
+            now_ns=1_000,
+            calibration_id="cal-1",
+            region_id="workcell",
+        )
+        decision = self.orchestrator.orchestrate(
+            self.proposals("fault-conflict"), self.state, spatial_snapshot=conflicting, now_ns=1_000
+        )
+        self.assertEqual(decision.status, "rejected")
+        self.assertIn("spatial_evidence_conflict", decision.reasons)
+        self.assertEqual(decision.coordinator_decisions, ())
 
     def test_replayed_orchestration_is_rejected(self) -> None:
         proposals = self.proposals()

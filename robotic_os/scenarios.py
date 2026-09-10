@@ -86,7 +86,7 @@ def run_demo(journal_path: Path | str) -> dict[str, Any]:
 
 
 def run_five_heart_demo(journal_path: Path | str) -> dict[str, Any]:
-    """Exercise four extremity processors plus the final orchestrator offline."""
+    """Exercise the four extremity, two regional, and main gates offline."""
     clock = DeterministicClock(1_000_000_000)
     limits = SafetyLimits(
         position_limits=((-1.0, 1.0), (-1.0, 1.0)),
@@ -177,6 +177,10 @@ def run_five_heart_demo(journal_path: Path | str) -> dict[str, Any]:
         "mode": "simulation_only",
         "architecture": {
             "extremity_processors": list(EXTREMITY_PROCESSORS),
+            "regional_coordinators": {
+                "upper": ["left_arm", "right_arm"],
+                "lower": ["left_leg", "right_leg"],
+            },
             "final_processor": "motion_orchestrator",
         },
         "spatial_snapshot": spatial_snapshot.to_dict(),

@@ -23,8 +23,8 @@ runtime has no external-action path.
 | Emergency stop | Latched stop requiring explicit reset | emergency-stop tests |
 | Event tampering | Hash-chain verification | journal tamper test |
 | Model-generated unsafe action | Model client is outside runtime/safety path | local-model contract and architecture |
-| Extremity proposal contaminates another extremity | Disjoint joint ownership and per-extremity validation | `test_all_four_processors_and_orchestrator_admit_atomically` |
-| Partial multi-extremity command | Final orchestrator requires all four processors and one orchestration ID | missing-processor and atomic-bundle tests |
+| Extremity proposal contaminates another extremity | Disjoint joint ownership and per-extremity validation, followed by upper/lower coordination | `test_all_four_processors_and_orchestrator_admit_atomically` |
+| Partial multi-extremity command | Regional and main gates require all four processors and one orchestration ID | `test_missing_extremity_is_rejected_by_final_processor`, `test_one_extremity_failure_blocks_the_whole_bundle` |
 | Camera perception hallucination | Clear requires fresh independent evidence including a wave modality | spatial fusion tests |
 | Wave or camera contradiction | Unknown snapshot with `stop_required`; orchestrator rejects it | contradiction test |
 | Oversized advisory context | Explicit compaction at 45% default threshold | context policy tests |

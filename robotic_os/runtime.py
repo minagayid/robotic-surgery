@@ -75,7 +75,7 @@ class OfflineRuntime:
         *,
         spatial_snapshot: SpatialSnapshot | None,
     ) -> OrchestrationDecision:
-        """Submit an all-extremity bundle through the atomic fifth processor."""
+        """Submit a bundle through regional coordinators and the main gate."""
         now_ns = self.clock.now_ns()
         if self.state is None:
             decision = OrchestrationDecision(

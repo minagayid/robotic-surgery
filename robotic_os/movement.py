@@ -1,8 +1,9 @@
-"""Five-processor movement path for the offline reference runtime.
+"""Hierarchical movement path for the offline reference runtime.
 
 The four extremity processors are independent deterministic validation gates.
-The fifth processor is an atomic orchestrator: it admits a bundle only when
-all four local decisions and the spatial evidence gate agree. Nothing in this
+Upper and lower coordinators aggregate their disjoint pairs without committing,
+and the fifth logical processor is an atomic main orchestrator: it admits a
+bundle only when all local, regional, and spatial gates agree. Nothing in this
 module is a hardware driver or a clinical controller.
 """
 
@@ -24,6 +25,13 @@ from .safety import SafetySupervisor
 
 EXTREMITY_PROCESSORS = ("left_arm", "right_arm", "left_leg", "right_leg")
 ORCHESTRATOR_PROCESSOR = "motion_orchestrator"
+UPPER_COORDINATOR_PROCESSOR = "upper_coordinating_processor"
+LOWER_COORDINATOR_PROCESSOR = "lower_coordinating_processor"
+MAIN_COORDINATOR_PROCESSOR = ORCHESTRATOR_PROCESSOR
+COORDINATION_GROUPS = {
+    UPPER_COORDINATOR_PROCESSOR: ("left_arm", "right_arm"),
+    LOWER_COORDINATOR_PROCESSOR: ("left_leg", "right_leg"),
+}
 
 
 @dataclass(frozen=True)
@@ -36,6 +44,30 @@ class ProcessorDecision:
 
 
 @dataclass(frozen=True)
+class CoordinatorDecision:
+    """Result from an upper/lower regional coordination gate."""
+
+    coordinator_id: str
+    status: str
+    reasons: tuple[str, ...]
+    processor_ids: tuple[str, ...]
+
+    def __post_init__(self) -> None:
+        if self.status not in {"approved", "clamped", "rejected", "stopped"}:
+            raise ValueError("invalid coordinator status")
+        if not self.coordinator_id or not self.processor_ids:
+            raise ValueError("coordinator identity and processor IDs are required")
+
+    def to_dict(self) -> dict[str, object]:
+        return {
+            "coordinator_id": self.coordinator_id,
+            "status": self.status,
+            "reasons": list(self.reasons),
+            "processor_ids": list(self.processor_ids),
+        }
+
+
+@dataclass(frozen=True)
 class OrchestrationDecision:
     status: str
     orchestration_id: str
@@ -43,6 +75,7 @@ class OrchestrationDecision:
     reasons: tuple[str, ...]
     processor_decisions: tuple[ProcessorDecision, ...]
     effective_target_positions: tuple[float, ...]
+    coordinator_decisions: tuple[CoordinatorDecision, ...] = ()
 
     def __post_init__(self) -> None:
         if self.status not in {"approved", "clamped", "rejected", "stopped"}:
@@ -59,6 +92,7 @@ class OrchestrationDecision:
             "reasons": list(self.reasons),
             "processor_decisions": [item.to_dict() for item in self.processor_decisions],
             "effective_target_positions": list(self.effective_target_positions),
+            "coordinator_decisions": [item.to_dict() for item in self.coordinator_decisions],
         }
 
 
@@ -149,8 +183,42 @@ class ExtremityProcessor:
         return self.supervisor.commit_sequence(decision.decision.source_id, decision.decision.sequence)
 
 
+class RegionalCoordinator:
+    """Coordinate a disjoint pair without committing any processor state."""
+
+    def __init__(self, coordinator_id: str, processor_ids: tuple[str, ...]) -> None:
+        if coordinator_id not in COORDINATION_GROUPS:
+            raise ValueError("unsupported regional coordinator")
+        expected = COORDINATION_GROUPS[coordinator_id]
+        if tuple(processor_ids) != expected:
+            raise ValueError("regional coordinator must own its configured processors")
+        self.coordinator_id = coordinator_id
+        self.processor_ids = expected
+
+    def coordinate(self, decisions: Mapping[str, ProcessorDecision]) -> CoordinatorDecision:
+        missing = [processor_id for processor_id in self.processor_ids if processor_id not in decisions]
+        if missing:
+            return CoordinatorDecision(
+                self.coordinator_id,
+                "rejected",
+                tuple(f"missing_processor:{processor_id}" for processor_id in missing),
+                self.processor_ids,
+            )
+        selected = [decisions[processor_id] for processor_id in self.processor_ids]
+        failures = [
+            f"{item.processor_id}:{reason}"
+            for item in selected
+            if item.decision.status not in {"approved", "clamped"}
+            for reason in item.decision.reasons
+        ]
+        if failures:
+            return CoordinatorDecision(self.coordinator_id, "rejected", tuple(failures), self.processor_ids)
+        status = "clamped" if any(item.decision.status == "clamped" for item in selected) else "approved"
+        return CoordinatorDecision(self.coordinator_id, status, (), self.processor_ids)
+
+
 class FiveHeartOrchestrator:
-    """Atomically coordinate four extremity decisions through a fifth gate."""
+    """Atomically coordinate four extremity decisions through regional gates."""
 
     def __init__(
         self,
@@ -172,6 +240,10 @@ class FiveHeartOrchestrator:
         self.min_spatial_confidence = min_spatial_confidence
         self.max_spatial_age_ns = max_spatial_age_ns
         self._seen_orchestration_ids: set[str] = set()
+        self.regional_coordinators = tuple(
+            RegionalCoordinator(coordinator_id, processor_ids)
+            for coordinator_id, processor_ids in COORDINATION_GROUPS.items()
+        )
 
     @staticmethod
     def _rejected(
@@ -180,6 +252,7 @@ class FiveHeartOrchestrator:
         now_ns: int,
         reasons: list[str],
         processor_decisions: tuple[ProcessorDecision, ...] = (),
+        coordinator_decisions: tuple[CoordinatorDecision, ...] = (),
     ) -> OrchestrationDecision:
         return OrchestrationDecision(
             "rejected",
@@ -188,6 +261,7 @@ class FiveHeartOrchestrator:
             tuple(dict.fromkeys(reasons)),
             processor_decisions,
             (),
+            coordinator_decisions,
         )
 
     def _spatial_reasons(
@@ -260,18 +334,29 @@ class FiveHeartOrchestrator:
                 now_ns=now_ns,
                 reasons=["processor_state_incompatible"],
             )
+        decision_map = {item.processor_id: item for item in decisions}
+        coordinator_decisions = tuple(
+            coordinator.coordinate(decision_map) for coordinator in self.regional_coordinators
+        )
         failed = [
             f"{item.processor_id}:{reason}"
             for item in decisions
             if item.decision.status not in {"approved", "clamped"}
             for reason in item.decision.reasons
         ]
-        if failed:
+        coordinator_failures = [
+            f"{item.coordinator_id}:{reason}"
+            for item in coordinator_decisions
+            if item.status not in {"approved", "clamped"}
+            for reason in item.reasons
+        ]
+        if failed or coordinator_failures:
             return self._rejected(
                 orchestration_id=orchestration_id,
                 now_ns=now_ns,
-                reasons=failed,
+                reasons=[*failed, *coordinator_failures],
                 processor_decisions=decisions,
+                coordinator_decisions=coordinator_decisions,
             )
 
         effective_positions = list(state.joint_positions)
@@ -287,6 +372,7 @@ class FiveHeartOrchestrator:
                     now_ns=now_ns,
                     reasons=[f"{processor_id}:sequence_commit_failed"],
                     processor_decisions=decisions,
+                    coordinator_decisions=coordinator_decisions,
                 )
 
         status = "clamped" if any(item.decision.status == "clamped" for item in decisions) else "approved"
@@ -297,4 +383,5 @@ class FiveHeartOrchestrator:
             (),
             decisions,
             tuple(effective_positions),
+            coordinator_decisions,
         )

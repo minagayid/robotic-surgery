@@ -27,6 +27,7 @@ class ScenarioTests(unittest.TestCase):
             result = run_five_heart_demo(Path(temp_dir) / "five-heart.jsonl")
         self.assertEqual(result["orchestration"]["status"], "approved")
         self.assertEqual(len(result["orchestration"]["processor_decisions"]), 4)
+        self.assertEqual(len(result["orchestration"]["coordinator_decisions"]), 2)
         self.assertEqual(result["spatial_snapshot"]["status"], "clear")
         self.assertTrue(result["journal_verified"])
 

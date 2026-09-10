@@ -70,9 +70,9 @@ It does not initially replace the computer kernel or hardware drivers.
   value requires.
 - **Replaceable components:** stable typed contracts allow models, simulators,
   sensors, and robot bodies to change independently.
-- **Five-processor movement gate:** left arm, right arm, left leg, and right leg
-  are validated by separate deterministic processors; a fifth orchestrator admits
-  only complete, mutually consistent bundles.
+- **Hierarchical movement gate:** left/right arm and left/right leg processors
+  validate independently, upper/lower coordinators aggregate their pairs, and a
+  main orchestrator admits only complete, mutually consistent bundles.
 - **Early context compaction:** optional advisory context is compacted at a
   configurable 40–50% threshold (45% by default) before it can consume a large
   model window.
@@ -85,10 +85,11 @@ POV data + robot demos -> offline training -> signed model bundle
 RGB/depth + ultrasonic/mmWave/Wi-Fi evidence -> time sync -> modality adapters
                                            -> fused spatial world model
                                                |
-Goal -> task planner -> four extremity processors -> final orchestrator
-                                                       -> safety supervisor -> controller
-                                               ^                         |
-                                               +---- execution feedback --+
+Goal -> task planner -> four extremity processors -> upper/lower coordinators
+                                                      -> main orchestrator
+                                                      -> safety supervisor -> controller
+                                               ^                                      |
+                                               +----------- execution feedback -------+
 ```
 
 See [Architecture](docs/ARCHITECTURE.md), [Sensor Fusion](docs/SENSOR_FUSION.md),
@@ -150,7 +151,7 @@ Success means at least 90% completion across a held-out test layout, zero safety
 limit violations, and reproducible recovery from expected perception failures.
 
 The current code implements only a host-side safety/reference slice behind this
-demonstrator. The five-processor path, wave-aware spatial fusion, and context
+demonstrator. The hierarchical five-processor path, wave-aware spatial fusion, and context
 policy are deterministic simulations; they are not hardware drivers or clinical
 capabilities. Hardware integration remains a future phase requiring a selected
 robot, sensors, compute target, independent safety controller, and separate

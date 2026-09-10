@@ -20,7 +20,7 @@ def main(argv: list[str] | None = None) -> int:
 
     five_heart = subparsers.add_parser(
         "five-heart-demo",
-        help="run the four-extremity plus orchestration simulation",
+        help="run the hierarchical extremity-coordination simulation",
     )
     five_heart.add_argument("--journal", type=Path, default=Path("runtime-data") / "five-heart-events.jsonl")
     five_heart.add_argument("--json", action="store_true", help="emit compact JSON")

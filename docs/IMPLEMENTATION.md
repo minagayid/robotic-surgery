@@ -13,7 +13,8 @@ simulation. It provides:
 - a latched emergency-stop state that requires an explicit operator reset;
 - a deterministic clock for reproducible scenarios;
 - a simulated actuator boundary that applies only approved or clamped commands;
-- four independent extremity processors plus a fifth atomic movement orchestrator;
+- four independent extremity processors, upper/lower regional coordinators, and a
+  fifth logical main movement orchestrator;
 - conservative fusion of camera/depth and wave-based spatial observations
   (ultrasonic, mmWave radar, and Wi-Fi CSI); and
 - an explicit advisory-context compaction policy that triggers at 45% by default
