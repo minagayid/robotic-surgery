@@ -3,15 +3,22 @@ import unittest
 from pathlib import Path
 
 from robotic_os import (
+    AdapterUnavailable,
+    CalibrationManifest,
+    CalibrationRegistry,
     DEFAULT_WORKCELL_PROFILE,
     FaultInjector,
     IndependentSafetyController,
     MotionProposal,
     RobotState,
+    ROS2AdapterContract,
     SafetyLimits,
+    SimulationActuatorAdapter,
     TelemetryRecord,
     append_jsonl,
     read_jsonl,
+    IsolatedSafetyBoundary,
+    run_soak,
 )
 from robotic_os.clock import DeterministicClock
 from robotic_os.events import EventJournal
@@ -112,6 +119,63 @@ class SafetyBoundaryTests(unittest.TestCase):
             )
             append_jsonl(path, record)
             self.assertEqual(read_jsonl(path), (record,))
+
+    def test_calibration_registry_is_expiry_and_dimension_aware(self) -> None:
+        manifest = CalibrationManifest.create(
+            calibration_id="cal-1",
+            robot_model="robotx-fixture",
+            joint_count=2,
+            coordinate_frames=("base", "tool"),
+            created_at_ns=900_000_000,
+            expires_at_ns=2_000_000_000,
+            source="test-fixture",
+        )
+        registry = CalibrationRegistry([manifest])
+        self.assertEqual(registry.require("cal-1", joint_count=2, now_ns=self.clock.now_ns()), manifest)
+        with self.assertRaises(ValueError):
+            registry.require("cal-1", joint_count=3, now_ns=self.clock.now_ns())
+        with self.assertRaises(ValueError):
+            registry.require("cal-1", joint_count=2, now_ns=2_000_000_000)
+
+    def test_actuator_boundary_is_simulation_only_and_ros_contract_fails_closed(self) -> None:
+        simulation = SimulationActuatorAdapter().apply(self.proposal(), now_ns=self.clock.now_ns())
+        self.assertTrue(simulation.accepted)
+        self.assertFalse(simulation.external_action)
+        ros = ROS2AdapterContract({"command": "/robotx/command"})
+        self.assertEqual(ros.build_message(self.proposal())["topics"]["command"], "/robotx/command")
+        with self.assertRaises(AdapterUnavailable):
+            ros.apply(self.proposal(), now_ns=self.clock.now_ns())
+
+    def test_runtime_does_not_advance_state_when_adapter_is_unavailable(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = OfflineRuntime(
+                clock=self.clock,
+                limits=self.limits,
+                allowed_sources={"planner"},
+                journal=EventJournal(Path(directory) / "events.jsonl"),
+                actuator=ROS2AdapterContract(),
+            )
+            runtime.update_state(self.state)
+            decision = runtime.submit(self.proposal())
+            self.assertEqual(decision.status, "stopped")
+            self.assertIn("actuator_adapter_unavailable", decision.reasons)
+            self.assertEqual(runtime.state.joint_positions, self.state.joint_positions)
+
+    def test_isolated_safety_worker_approves_safe_proposal(self) -> None:
+        boundary = IsolatedSafetyBoundary(
+            limits=self.limits,
+            heartbeat_timeout_ns=100_000_000,
+            timeout_ms=2_000,
+        )
+        decision = boundary.authorize(self.proposal(), self.state, now_ns=self.clock.now_ns())
+        self.assertEqual(decision.status, "approved")
+
+    def test_soak_harness_catches_periodic_faults(self) -> None:
+        report = run_soak(iterations=100, fault_interval=25)
+        self.assertEqual(report["status"], "pass")
+        self.assertEqual(report["fault_rejected"], 4)
+        self.assertEqual(report["unexpected"], 0)
+        self.assertFalse(report["external_actuation"])
 
 
 if __name__ == "__main__":

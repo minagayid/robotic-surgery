@@ -20,6 +20,14 @@ simulation. It provides:
 - an independent final safety-gate reference model exercised after host-side
   validation, plus deterministic stale-heartbeat, sensor, and emergency-stop
   fault injection helpers;
+- expiry-aware calibration manifests and a registry that rejects unknown,
+  expired, or dimension-incompatible calibration state;
+- a fail-closed actuator/HAL boundary with a simulation adapter and a ROS2
+  message-shape contract that cannot open a ROS connection;
+- a process-isolated safety-worker prototype that stops on timeout, malformed
+  responses, or worker failure; and
+- a deterministic long-duration soak harness that runs paired host/independent
+  checks and periodic sensor faults without external actuation;
 - versioned JSON telemetry records suitable for local replay or a downstream
   ingest adapter;
 - conservative fusion of camera/depth and wave-based spatial observations
@@ -41,6 +49,7 @@ python -m robotic_os demo --json
 python -m robotic_os five-heart-demo --json
 python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
+python -m robotic_os soak --iterations 10000 --fault-interval 1000
 ```
 
 The default demo journal is written under `runtime-data/`, which is ignored by
@@ -63,8 +72,10 @@ intentionally not imported by the motion or safety path.
 ## Next engineering gate
 
 The concrete profile and independent gate close the software-side selection gate
-for repeatable SIL tests. Hardware-in-loop work is still a separate gate: select
-the actual robot and sensors, map these contracts to a certified safety PLC/drive
-function, define the hazard-analysis owner, and add adapters behind the existing
-contracts. The host reference runtime is evidence for software behavior only; it
-is not evidence of certified safety or hard real-time timing.
+for repeatable SIL tests. The calibration registry, HAL, isolated worker, and
+soak harness extend that evidence, but do not close the hardware gate.
+Hardware-in-loop work is still a separate gate: select the actual robot and
+sensors, map these contracts to a certified safety PLC/drive function, define
+the hazard-analysis owner, and implement a reviewed ROS2/HAL adapter. The host
+reference runtime is evidence for software behavior only; it is not evidence of
+certified safety or hard real-time timing.

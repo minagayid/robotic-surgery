@@ -8,6 +8,7 @@ from pathlib import Path
 
 from .benchmark import run_benchmark
 from .scenarios import run_demo, run_five_heart_demo
+from .soak import run_soak
 from .workcell import DEFAULT_WORKCELL_PROFILE
 
 
@@ -36,6 +37,11 @@ def main(argv: list[str] | None = None) -> int:
     benchmark.add_argument("--iterations", type=int, default=1_000)
     benchmark.add_argument("--json", action="store_true", help="emit compact JSON")
 
+    soak = subparsers.add_parser("soak", help="run deterministic safety soak and fault checks")
+    soak.add_argument("--iterations", type=int, default=10_000)
+    soak.add_argument("--fault-interval", type=int, default=1_000)
+    soak.add_argument("--json", action="store_true", help="emit compact JSON")
+
     args = parser.parse_args(argv)
     if args.command == "demo":
         result = run_demo(args.journal)
@@ -43,7 +49,9 @@ def main(argv: list[str] | None = None) -> int:
         result = run_five_heart_demo(args.journal)
     elif args.command == "workcell-info":
         result = DEFAULT_WORKCELL_PROFILE.to_dict()
-    else:
+    elif args.command == "benchmark":
         result = run_benchmark(args.iterations)
+    else:
+        result = run_soak(iterations=args.iterations, fault_interval=args.fault_interval)
     print(json.dumps(result, separators=(",", ":") if args.json else None, indent=None if args.json else 2))
     return 0

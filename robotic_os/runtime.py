@@ -6,6 +6,7 @@ from dataclasses import replace
 from typing import Mapping
 
 from .clock import DeterministicClock, MonotonicClock
+from .adapters import ActuationReceipt, AdapterUnavailable, HardwareAbstractionLayer, ActuatorAdapter
 from .contracts import MotionProposal, RobotState, SafetyDecision, SafetyLimits, SpatialSnapshot
 from .events import EventJournal
 from .movement import FiveHeartOrchestrator, OrchestrationDecision
@@ -24,6 +25,7 @@ class OfflineRuntime:
         limits: SafetyLimits,
         allowed_sources: set[str],
         journal: EventJournal,
+        actuator: ActuatorAdapter | None = None,
     ) -> None:
         self.clock = clock
         self.supervisor = SafetySupervisor(
@@ -36,6 +38,7 @@ class OfflineRuntime:
             heartbeat_timeout_ns=100_000_000,
         )
         self.journal = journal
+        self.hal = HardwareAbstractionLayer(actuator)
         self.state: RobotState | None = None
         self._fresh_state_required = False
 
@@ -62,6 +65,7 @@ class OfflineRuntime:
             return decision
         decision = self.supervisor.authorize(proposal, self.state, now_ns=now_ns)
         independent_decision = None
+        actuation_receipt: ActuationReceipt | None = None
         if decision.status in {"approved", "clamped"}:
             gated_proposal = replace(proposal, velocities=decision.effective_velocities)
             independent_decision = self.independent_safety.authorize(gated_proposal, self.state, now_ns=now_ns)
@@ -74,11 +78,33 @@ class OfflineRuntime:
                     now_ns,
                     tuple(0.0 for _ in proposal.velocities),
                 )
+            else:
+                try:
+                    actuation_receipt = self.hal.apply(gated_proposal, now_ns=now_ns)
+                except AdapterUnavailable:
+                    decision = SafetyDecision(
+                        "stopped",
+                        ("actuator_adapter_unavailable",),
+                        proposal.source_id,
+                        proposal.sequence,
+                        now_ns,
+                        tuple(0.0 for _ in proposal.velocities),
+                    )
+                if actuation_receipt is not None and not actuation_receipt.accepted:
+                    decision = SafetyDecision(
+                        "stopped",
+                        tuple(dict.fromkeys(("actuator_rejected", *actuation_receipt.reasons))),
+                        proposal.source_id,
+                        proposal.sequence,
+                        now_ns,
+                        tuple(0.0 for _ in proposal.velocities),
+                    )
         self.journal.append({
             "type": "decision",
             "proposal": proposal.to_dict(),
             "decision": decision.to_dict(),
             "independent_safety": independent_decision.to_dict() if independent_decision else None,
+            "actuation": actuation_receipt.to_dict() if actuation_receipt else None,
         })
         if decision.status in {"approved", "clamped"}:
             self.state = RobotState(
@@ -103,6 +129,7 @@ class OfflineRuntime:
         """Submit a bundle through regional coordinators and the main gate."""
         now_ns = self.clock.now_ns()
         independent_decisions = []
+        actuation_receipts: list[ActuationReceipt] = []
         if self.state is None:
             decision = OrchestrationDecision(
                 "stopped",
@@ -178,6 +205,20 @@ class OfflineRuntime:
                 if not global_reasons:
                     for item in decision.processor_decisions:
                         proposal = proposals[item.processor_id]
+                        gated_proposal = replace(proposal, velocities=item.decision.effective_velocities)
+                        try:
+                            receipt = self.hal.apply(gated_proposal, now_ns=now_ns)
+                            actuation_receipts.append(receipt)
+                            if not receipt.accepted:
+                                global_reasons.extend(
+                                    f"{item.processor_id}:{reason}"
+                                    for reason in ("actuator_rejected", *receipt.reasons)
+                                )
+                        except AdapterUnavailable:
+                            global_reasons.append(f"{item.processor_id}:actuator_adapter_unavailable")
+                if not global_reasons:
+                    for item in decision.processor_decisions:
+                        proposal = proposals[item.processor_id]
                         if not self.independent_safety.commit_sequence(proposal.source_id, proposal.sequence):
                             global_reasons.append(f"{item.processor_id}:independent_sequence_commit_failed")
                 if global_reasons:
@@ -195,6 +236,7 @@ class OfflineRuntime:
             "decision": decision.to_dict(),
             "spatial_snapshot": spatial_snapshot.to_dict() if spatial_snapshot else None,
             "independent_safety": [item.to_dict() for item in independent_decisions],
+            "actuation": [item.to_dict() for item in actuation_receipts],
         })
         if self.state is not None and decision.status in {"approved", "clamped"}:
             self.state = RobotState(

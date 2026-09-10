@@ -5,6 +5,8 @@ drivers, real-time guarantees, surgical workflows, or actuator access.
 """
 
 from .clock import DeterministicClock, MonotonicClock
+from .adapters import ActuationReceipt, AdapterUnavailable, HardwareAbstractionLayer, ROS2AdapterContract, SimulationActuatorAdapter
+from .calibration import CalibrationManifest, CalibrationRegistry
 from .context import AdvisoryContext, CompactionDecision, ContextCompactionPolicy
 from .contracts import (
     MotionProposal,
@@ -31,15 +33,24 @@ from .movement import (
     RegionalCoordinator,
 )
 from .runtime import OfflineRuntime
+from .isolation import IsolatedSafetyBoundary
 from .safety import SafetySupervisor
 from .hardware_safety import IndependentSafetyController
 from .spatial import SpatialFusionEngine
 from .faults import FaultInjector
 from .telemetry import TelemetryRecord, append_jsonl, read_jsonl
 from .workcell import DEFAULT_WORKCELL_PROFILE, WorkcellProfile
+from .soak import run_soak
 
 __all__ = [
     "DeterministicClock",
+    "ActuationReceipt",
+    "AdapterUnavailable",
+    "HardwareAbstractionLayer",
+    "ROS2AdapterContract",
+    "SimulationActuatorAdapter",
+    "CalibrationManifest",
+    "CalibrationRegistry",
     "EventJournal",
     "AdvisoryContext",
     "CompactionDecision",
@@ -57,6 +68,7 @@ __all__ = [
     "OfflineDatasetManifest",
     "OfflineDatasetRegistry",
     "OfflineRuntime",
+    "IsolatedSafetyBoundary",
     "IndependentSafetyController",
     "FaultInjector",
     "ORCHESTRATOR_PROCESSOR",
@@ -76,4 +88,5 @@ __all__ = [
     "read_jsonl",
     "WorkcellProfile",
     "DEFAULT_WORKCELL_PROFILE",
+    "run_soak",
 ]

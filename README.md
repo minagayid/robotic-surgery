@@ -21,6 +21,7 @@ python -m robotic_os demo --json
 python -m robotic_os five-heart-demo --json
 python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
+python -m robotic_os soak --iterations 10000 --fault-interval 1000
 ```
 
 The demo exercises an approved command, a velocity-clamped command, an expired
@@ -157,9 +158,12 @@ simulation, coordinate frames, rates, compute target, and no-hardware policy.
 Every accepted command also passes an independent final safety-gate model, and
 versioned telemetry can be written for local replay or downstream ingest.
 These are SIL/reference controls, not hardware drivers or clinical capabilities.
-Hardware-in-loop integration remains a separate phase requiring the selected
-robot, sensors, certified safety controller, and independent verification
-evidence.
+The package now also includes expiry-aware calibration manifests, a single
+fail-closed actuator/HAL injection point, a ROS2 message-shape contract with no
+runtime binding, a process-isolated safety-worker prototype, and a deterministic
+long-duration soak/fault harness. Hardware-in-loop integration remains a
+separate phase requiring the selected robot, sensors, certified safety
+controller, and independent verification evidence.
 
 ## Repository policy
 
