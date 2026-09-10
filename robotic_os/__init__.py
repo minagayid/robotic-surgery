@@ -34,6 +34,7 @@ from .movement import (
 )
 from .runtime import OfflineRuntime
 from .isolation import IsolatedSafetyBoundary
+from .release_gate import GateCheck, ReleaseGateReport, evaluate_release, load_manifest
 from .safety import SafetySupervisor
 from .hardware_safety import IndependentSafetyController
 from .spatial import SpatialFusionEngine
@@ -69,6 +70,10 @@ __all__ = [
     "OfflineDatasetRegistry",
     "OfflineRuntime",
     "IsolatedSafetyBoundary",
+    "GateCheck",
+    "ReleaseGateReport",
+    "evaluate_release",
+    "load_manifest",
     "IndependentSafetyController",
     "FaultInjector",
     "ORCHESTRATOR_PROCESSOR",

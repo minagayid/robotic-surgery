@@ -28,6 +28,9 @@ simulation. It provides:
   responses, or worker failure; and
 - a deterministic long-duration soak harness that runs paired host/independent
   checks and periodic sensor faults without external actuation;
+- a release-gate evaluator that requires target hardware, certified safety,
+  approved calibration, independent HIL evidence, untampered soak evidence,
+  and separate review before it can report review eligibility;
 - versioned JSON telemetry records suitable for local replay or a downstream
   ingest adapter;
 - conservative fusion of camera/depth and wave-based spatial observations
@@ -50,6 +53,7 @@ python -m robotic_os five-heart-demo --json
 python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
 python -m robotic_os soak --iterations 10000 --fault-interval 1000
+python -m robotic_os release-gate docs/production-gate-manifest.example.json --json
 ```
 
 The default demo journal is written under `runtime-data/`, which is ignored by

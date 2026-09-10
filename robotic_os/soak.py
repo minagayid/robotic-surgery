@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 import time
+import hashlib
+import json
 from dataclasses import replace
 from typing import Any
 
@@ -44,7 +46,7 @@ def run_soak(*, iterations: int = 10_000, fault_interval: int = 1_000) -> dict[s
     fault_rejected = 0
     unexpected = 0
     for sequence in range(1, iterations + 1):
-        now_ns = base_ns + sequence * 1_000_000
+        now_ns = base_ns + sequence * 1_000_000_000
         proposal = MotionProposal(
             source_id="soak-planner",
             sequence=sequence,
@@ -75,7 +77,7 @@ def run_soak(*, iterations: int = 10_000, fault_interval: int = 1_000) -> dict[s
     ordered = sorted(latencies_us)
     p50 = ordered[(len(ordered) - 1) // 2]
     p99 = ordered[min(len(ordered) - 1, (len(ordered) * 99 + 99) // 100 - 1)]
-    return {
+    report = {
         "status": "pass" if unexpected == 0 else "fail",
         "iterations": iterations,
         "fault_interval": fault_interval,
@@ -85,4 +87,13 @@ def run_soak(*, iterations: int = 10_000, fault_interval: int = 1_000) -> dict[s
         "latency_us": {"p50": round(p50, 3), "p99": round(p99, 3)},
         "external_actuation": False,
         "deterministic_inputs": True,
+        "simulated_duration_hours": round(iterations / 3_600.0, 6),
     }
+    report["evidence_digest"] = soak_report_digest(report)
+    return report
+
+
+def soak_report_digest(report: dict[str, Any]) -> str:
+    """Hash the report fields so a gate can detect edited evidence."""
+    payload = {key: value for key, value in report.items() if key != "evidence_digest"}
+    return hashlib.sha256(json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()

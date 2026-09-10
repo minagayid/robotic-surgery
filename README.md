@@ -22,6 +22,7 @@ python -m robotic_os five-heart-demo --json
 python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
 python -m robotic_os soak --iterations 10000 --fault-interval 1000
+python -m robotic_os release-gate docs/production-gate-manifest.example.json --json
 ```
 
 The demo exercises an approved command, a velocity-clamped command, an expired
@@ -164,6 +165,11 @@ runtime binding, a process-isolated safety-worker prototype, and a deterministic
 long-duration soak/fault harness. Hardware-in-loop integration remains a
 separate phase requiring the selected robot, sensors, certified safety
 controller, and independent verification evidence.
+
+The `release-gate` command evaluates those external production prerequisites
+and fails closed when any evidence is missing or tampered. It can report
+eligibility for independent production review, but never grants production or
+clinical approval itself. See [Production gates](docs/PRODUCTION_GATES.md).
 
 ## Repository policy
 

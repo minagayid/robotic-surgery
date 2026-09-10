@@ -9,6 +9,7 @@ from pathlib import Path
 from .benchmark import run_benchmark
 from .scenarios import run_demo, run_five_heart_demo
 from .soak import run_soak
+from .release_gate import evaluate_release, load_manifest
 from .workcell import DEFAULT_WORKCELL_PROFILE
 
 
@@ -42,6 +43,11 @@ def main(argv: list[str] | None = None) -> int:
     soak.add_argument("--fault-interval", type=int, default=1_000)
     soak.add_argument("--json", action="store_true", help="emit compact JSON")
 
+    gate = subparsers.add_parser("release-gate", help="evaluate production evidence without granting approval")
+    gate.add_argument("manifest", type=Path)
+    gate.add_argument("--minimum-soak-iterations", type=int, default=86_400)
+    gate.add_argument("--json", action="store_true", help="emit compact JSON")
+
     args = parser.parse_args(argv)
     if args.command == "demo":
         result = run_demo(args.journal)
@@ -51,7 +57,9 @@ def main(argv: list[str] | None = None) -> int:
         result = DEFAULT_WORKCELL_PROFILE.to_dict()
     elif args.command == "benchmark":
         result = run_benchmark(args.iterations)
-    else:
+    elif args.command == "soak":
         result = run_soak(iterations=args.iterations, fault_interval=args.fault_interval)
+    else:
+        result = evaluate_release(load_manifest(args.manifest), minimum_soak_iterations=args.minimum_soak_iterations).to_dict()
     print(json.dumps(result, separators=(",", ":") if args.json else None, indent=None if args.json else 2))
     return 0

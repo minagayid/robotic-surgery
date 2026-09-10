@@ -1,0 +1,18 @@
+{
+  "target_hardware": "TBD",
+  "certified_safety_controller": {
+    "certified": false,
+    "certificate_id": "TBD"
+  },
+  "calibration": {
+    "calibration_id": "TBD",
+    "checksum": "",
+    "approved_by": "TBD"
+  },
+  "hardware_in_loop": {
+    "passed": false,
+    "independent_verification": false
+  },
+  "soak": {},
+  "independent_review": false
+}

@@ -19,6 +19,7 @@ from robotic_os import (
     read_jsonl,
     IsolatedSafetyBoundary,
     run_soak,
+    evaluate_release,
 )
 from robotic_os.clock import DeterministicClock
 from robotic_os.events import EventJournal
@@ -176,6 +177,34 @@ class SafetyBoundaryTests(unittest.TestCase):
         self.assertEqual(report["fault_rejected"], 4)
         self.assertEqual(report["unexpected"], 0)
         self.assertFalse(report["external_actuation"])
+
+    def test_release_gate_blocks_missing_physical_evidence(self) -> None:
+        report = evaluate_release({})
+        self.assertEqual(report.status, "blocked")
+        self.assertFalse(report.production_approved)
+        self.assertTrue(any(not check.passed for check in report.checks))
+
+    def test_release_gate_accepts_only_complete_evidence_for_review(self) -> None:
+        soak = run_soak(iterations=100, fault_interval=25)
+        manifest = {
+            "target_hardware": "robotx-fixture-v1",
+            "certified_safety_controller": {"certified": True, "certificate_id": "safety-cert-1"},
+            "calibration": {"calibration_id": "cal-1", "checksum": "a" * 64, "approved_by": "calibration-authority"},
+            "hardware_in_loop": {"passed": True, "independent_verification": True},
+            "soak": soak,
+            "independent_review": True,
+            "checked_at_ns": 10,
+        }
+        report = evaluate_release(manifest, minimum_soak_iterations=100)
+        self.assertEqual(report.status, "eligible_for_independent_production_review")
+        self.assertFalse(report.production_approved)
+        tampered = dict(soak)
+        tampered["unexpected"] = 1
+        manifest["soak"] = tampered
+        self.assertEqual(evaluate_release(manifest, minimum_soak_iterations=100).status, "blocked")
+        malformed = dict(manifest)
+        malformed["soak"] = {"iterations": "not-a-number"}
+        self.assertEqual(evaluate_release(malformed, minimum_soak_iterations=100).status, "blocked")
 
 
 if __name__ == "__main__":
