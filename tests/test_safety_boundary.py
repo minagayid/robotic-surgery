@@ -10,6 +10,8 @@ from robotic_os import (
     RobotState,
     SafetyLimits,
     TelemetryRecord,
+    append_jsonl,
+    read_jsonl,
 )
 from robotic_os.clock import DeterministicClock
 from robotic_os.events import EventJournal
@@ -95,6 +97,21 @@ class SafetyBoundaryTests(unittest.TestCase):
             record_id="record-1",
         )
         self.assertEqual(TelemetryRecord.from_dict(record.to_dict()), record)
+
+    def test_telemetry_jsonl_round_trip_is_replayable(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "telemetry.jsonl"
+            record = TelemetryRecord(
+                event_type="decision",
+                timestamp_ns=11,
+                source_id="robotx.offline-runtime",
+                calibration_id="cal-1",
+                safety_status="approved",
+                payload={"status": "approved"},
+                record_id="record-2",
+            )
+            append_jsonl(path, record)
+            self.assertEqual(read_jsonl(path), (record,))
 
 
 if __name__ == "__main__":
