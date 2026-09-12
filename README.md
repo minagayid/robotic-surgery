@@ -41,7 +41,10 @@ policy backend is installed). That distinction is deliberate and documented.
  Layer 5  sim2real/      Sim validation + domain randomization · safety envelope
                          (torque/speed/force limits, kill switch) · staged rollout
  Layer 6  ops/           Dataset versioning · near-dedup · bias/safety filters ·
-                         failure-case feedback loop
+                          failure-case feedback loop
+ Spatial  spatial_4d.py  Offline 360° multimodal fusion · observed/inferred
+                         tracks · motion prediction · emission-aware modes
+ Movement movement.py    Selective extremity brains with atomic inactive-joint hold
 ```
 
 See [`docs/architecture.md`](docs/architecture.md) for the full data flow and the
@@ -61,6 +64,12 @@ python -m robotx.cli plan "make coffee"
 
 # run the whole 6-layer pipeline end-to-end on mock backends
 python -m robotx.cli run --limit 2 --instruction "pick up cup"
+
+# run the offline 360° 4D spatial reference slice
+python -m robotx.cli spatial-demo --mode normal
+
+# prove right-arm-only activation with inactive-joint hold
+python -m robotx.cli movement-demo
 ```
 
 Or from Python:
@@ -134,3 +143,10 @@ loop are real and exercised; the heavy perception/policy models are mocked
 behind stable interfaces. The natural next steps are wiring the real backends in
 `requirements-ml.txt` one at a time (start with the visual encoder and hand-pose
 estimator) — each is an isolated, drop-in replacement.
+
+The offline 360 4D reference slice is documented in
+[`docs/SRV_4D_PLAN.md`](docs/SRV_4D_PLAN.md). It uses deterministic sensor
+measurements, explicit sector coverage, uncertainty, occlusion, and one-second
+motion prediction. Selective movement activates only the requested extremity
+brains and keeps every inactive joint unchanged. These are simulation contracts,
+not claims of physical, exposure, clinical, or through-wall safety.

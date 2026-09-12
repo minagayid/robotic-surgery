@@ -18,6 +18,8 @@ from __future__ import annotations
 
 from .config import PipelineConfig, load_config
 from .pipeline import Pipeline
+from .movement import ExtremityBrain, ExtremityCommand, MovementDecision, MovementOrchestrator
+from .spatial_4d import SpatialEntity, SpatialMeasurement, SpatialRecognitionSystem, SpatialWorldSnapshot
 from .types import (
     ClipRecord,
     PseudoDemonstration,
@@ -32,6 +34,14 @@ __all__ = [
     "PipelineConfig",
     "load_config",
     "Pipeline",
+    "ExtremityBrain",
+    "ExtremityCommand",
+    "MovementDecision",
+    "MovementOrchestrator",
+    "SpatialEntity",
+    "SpatialMeasurement",
+    "SpatialRecognitionSystem",
+    "SpatialWorldSnapshot",
     "ClipRecord",
     "PseudoDemonstration",
     "RobotAction",

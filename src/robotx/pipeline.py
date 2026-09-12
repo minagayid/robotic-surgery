@@ -22,6 +22,7 @@ from .data.sources import VideoSource, collect
 from .learning.planner import HighLevelPlanner
 from .learning.pretrain import RepresentationTrainer
 from .learning.vla_policy import build_policy
+from .movement import demo_selective_movement
 from .ops.feedback import FeedbackLoop
 from .ops.filters import apply_dataset_filters
 from .ops.versioning import DatasetVersioner
@@ -30,6 +31,7 @@ from .retargeting.kinematic import KinematicRetargeter
 from .retargeting.representation import build_encoder
 from .sim2real.rollout import StagedRollout
 from .sim2real.validation import SimValidator
+from .spatial_4d import SpatialRecognitionSystem
 from .types import ClipRecord, RobotDemonstration
 
 
@@ -54,6 +56,7 @@ class Pipeline:
         self.retargeter = KinematicRetargeter(self.cfg.retarget)
         self.versioner = DatasetVersioner(self.encoder, self.cfg.ops, self.manifest)
         self.planner = HighLevelPlanner()
+        self.spatial = SpatialRecognitionSystem()
 
     # -- individual stages -------------------------------------------------
     def ingest(self, sources: list[VideoSource], per_source_limit: int | None = None
@@ -119,6 +122,26 @@ class Pipeline:
         report.stages["planner"] = {
             "goal": plan.goal, "subtasks": [s.instruction for s in plan.subtasks],
         }
+
+        # 4D spatial reference slice. Sensor adapters are intentionally absent:
+        # this deterministic scene is for offline replay and contract testing.
+        spatial = self.spatial.fuse(
+            self.spatial.demo_measurements(),
+            now_ns=1_000,
+            calibration_id="demo-cal",
+            region_id="demo",
+        )
+        report.stages["spatial_4d"] = {
+            "status": spatial.status,
+            "coverage_fraction": spatial.coverage_fraction,
+            "unknown_sectors": list(spatial.unknown_sectors),
+            "entities": [entity.to_dict() for entity in spatial.entities],
+            "emission_modalities": list(spatial.emission_modalities),
+            "stop_required": spatial.stop_required,
+            "simulation_only": True,
+        }
+        movement = demo_selective_movement()
+        report.stages["movement_selective"] = movement.to_dict()
 
         # 5. sim validation
         validator = SimValidator(self.cfg.safety, domain_randomize=True)

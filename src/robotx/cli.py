@@ -17,6 +17,8 @@ import sys
 from .config import dump_config, load_config
 from .data.sources import build_source
 from .learning.planner import HighLevelPlanner
+from .movement import demo_selective_movement
+from .spatial_4d import SpatialRecognitionSystem
 from .pipeline import Pipeline
 
 _DEFAULT_SOURCES = [
@@ -65,6 +67,24 @@ def _cmd_config(args: argparse.Namespace) -> int:
     return 0
 
 
+def _cmd_spatial_demo(args: argparse.Namespace) -> int:
+    engine = SpatialRecognitionSystem(mode=args.mode)
+    snapshot = engine.fuse(
+        engine.demo_measurements(),
+        now_ns=1_000,
+        calibration_id="demo-cal",
+        region_id="demo",
+        mode=args.mode,
+    )
+    print(json.dumps(snapshot.to_dict(), indent=2))
+    return 0
+
+
+def _cmd_movement_demo(_: argparse.Namespace) -> int:
+    print(json.dumps(demo_selective_movement().to_dict(), indent=2))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="robotx",
                                 description="POV Video -> Robot Learning System")
@@ -87,6 +107,13 @@ def build_parser() -> argparse.ArgumentParser:
     cf = sub.add_parser("config", help="print effective config as YAML")
     cf.add_argument("--config", default=None)
     cf.set_defaults(func=_cmd_config)
+
+    spatial = sub.add_parser("spatial-demo", help="run the offline 360 4D spatial reference slice")
+    spatial.add_argument("--mode", choices=["eco", "normal", "degraded"], default="normal")
+    spatial.set_defaults(func=_cmd_spatial_demo)
+
+    movement = sub.add_parser("movement-demo", help="run the offline selective extremity-brain demo")
+    movement.set_defaults(func=_cmd_movement_demo)
     return p
 
 
