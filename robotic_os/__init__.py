@@ -16,6 +16,7 @@ from .contracts import (
     SpatialObservation,
     SpatialSnapshot,
 )
+from .spatial_4d import SpatialEntity, SpatialMeasurement, SpatialRecognitionSystem, SpatialWorldSnapshot
 from .data import DatasetAdmissionDecision, OfflineDatasetManifest, OfflineDatasetRegistry
 from .events import EventJournal
 from .movement import (
@@ -88,6 +89,10 @@ __all__ = [
     "SpatialFusionEngine",
     "SpatialObservation",
     "SpatialSnapshot",
+    "SpatialEntity",
+    "SpatialMeasurement",
+    "SpatialRecognitionSystem",
+    "SpatialWorldSnapshot",
     "TelemetryRecord",
     "append_jsonl",
     "read_jsonl",

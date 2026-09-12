@@ -125,8 +125,9 @@ class OfflineRuntime:
         proposals: Mapping[str, MotionProposal],
         *,
         spatial_snapshot: SpatialSnapshot | None,
+        active_processors: tuple[str, ...] | None = None,
     ) -> OrchestrationDecision:
-        """Submit a bundle through regional coordinators and the main gate."""
+        """Submit a selective bundle through regional coordinators and the main gate."""
         now_ns = self.clock.now_ns()
         independent_decisions = []
         actuation_receipts: list[ActuationReceipt] = []
@@ -166,6 +167,7 @@ class OfflineRuntime:
                 self.state,
                 spatial_snapshot=spatial_snapshot,
                 now_ns=now_ns,
+                active_processors=active_processors,
             )
             if decision.status in {"approved", "clamped"}:
                 global_reasons: list[str] = []

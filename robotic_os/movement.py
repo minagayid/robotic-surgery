@@ -76,6 +76,7 @@ class OrchestrationDecision:
     processor_decisions: tuple[ProcessorDecision, ...]
     effective_target_positions: tuple[float, ...]
     coordinator_decisions: tuple[CoordinatorDecision, ...] = ()
+    active_processor_ids: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
         if self.status not in {"approved", "clamped", "rejected", "stopped"}:
@@ -93,6 +94,7 @@ class OrchestrationDecision:
             "processor_decisions": [item.to_dict() for item in self.processor_decisions],
             "effective_target_positions": list(self.effective_target_positions),
             "coordinator_decisions": [item.to_dict() for item in self.coordinator_decisions],
+            "active_processor_ids": list(self.active_processor_ids),
         }
 
 
@@ -195,16 +197,23 @@ class RegionalCoordinator:
         self.coordinator_id = coordinator_id
         self.processor_ids = expected
 
-    def coordinate(self, decisions: Mapping[str, ProcessorDecision]) -> CoordinatorDecision:
-        missing = [processor_id for processor_id in self.processor_ids if processor_id not in decisions]
+    def coordinate(
+        self,
+        decisions: Mapping[str, ProcessorDecision],
+        required_processor_ids: tuple[str, ...] | None = None,
+    ) -> CoordinatorDecision:
+        required = self.processor_ids if required_processor_ids is None else tuple(required_processor_ids)
+        if not required or any(processor_id not in self.processor_ids for processor_id in required):
+            raise ValueError("regional coordinator received an unsupported processor subset")
+        missing = [processor_id for processor_id in required if processor_id not in decisions]
         if missing:
             return CoordinatorDecision(
                 self.coordinator_id,
                 "rejected",
                 tuple(f"missing_processor:{processor_id}" for processor_id in missing),
-                self.processor_ids,
+                required,
             )
-        selected = [decisions[processor_id] for processor_id in self.processor_ids]
+        selected = [decisions[processor_id] for processor_id in required]
         failures = [
             f"{item.processor_id}:{reason}"
             for item in selected
@@ -212,9 +221,9 @@ class RegionalCoordinator:
             for reason in item.decision.reasons
         ]
         if failures:
-            return CoordinatorDecision(self.coordinator_id, "rejected", tuple(failures), self.processor_ids)
+            return CoordinatorDecision(self.coordinator_id, "rejected", tuple(failures), required)
         status = "clamped" if any(item.decision.status == "clamped" for item in selected) else "approved"
-        return CoordinatorDecision(self.coordinator_id, status, (), self.processor_ids)
+        return CoordinatorDecision(self.coordinator_id, status, (), required)
 
 
 class FiveHeartOrchestrator:
@@ -253,6 +262,7 @@ class FiveHeartOrchestrator:
         reasons: list[str],
         processor_decisions: tuple[ProcessorDecision, ...] = (),
         coordinator_decisions: tuple[CoordinatorDecision, ...] = (),
+        active_processor_ids: tuple[str, ...] = (),
     ) -> OrchestrationDecision:
         return OrchestrationDecision(
             "rejected",
@@ -262,6 +272,7 @@ class FiveHeartOrchestrator:
             processor_decisions,
             (),
             coordinator_decisions,
+            tuple(active_processor_ids),
         )
 
     def _spatial_reasons(
@@ -299,44 +310,92 @@ class FiveHeartOrchestrator:
         *,
         spatial_snapshot: SpatialSnapshot | None,
         now_ns: int,
+        active_processors: tuple[str, ...] | None = None,
     ) -> OrchestrationDecision:
-        """Validate and atomically admit a complete five-processor bundle."""
+        """Validate and atomically admit a selective five-processor bundle.
+
+        ``active_processors`` models the octopus-like case: a task may wake only
+        the extremity brains it needs. Omitted extremities are held at their
+        current joint positions and never receive a proposal or sequence commit.
+        """
         if now_ns < 0:
             raise ValueError("now_ns must be non-negative")
+        if active_processors is None:
+            active = EXTREMITY_PROCESSORS
+        else:
+            requested = tuple(active_processors)
+            if not requested or len(set(requested)) != len(requested) or any(
+                processor_id not in EXTREMITY_PROCESSORS for processor_id in requested
+            ):
+                return self._rejected(
+                    orchestration_id="",
+                    now_ns=now_ns,
+                    reasons=["invalid_active_processor_subset"],
+                )
+            active = tuple(processor_id for processor_id in EXTREMITY_PROCESSORS if processor_id in requested)
         keys = set(proposals)
-        missing = sorted(set(EXTREMITY_PROCESSORS) - keys)
-        unexpected = sorted(keys - set(EXTREMITY_PROCESSORS))
+        missing = sorted(set(active) - keys)
+        unexpected = sorted(keys - set(active))
         if missing or unexpected:
-            reasons = [*(f"missing_processor:{name}" for name in missing), *(f"unexpected_processor:{name}" for name in unexpected)]
-            return self._rejected(orchestration_id="", now_ns=now_ns, reasons=reasons)
+            reasons = [
+                *(f"missing_processor:{name}" for name in missing),
+                *(f"inactive_or_unexpected_processor:{name}" for name in unexpected),
+            ]
+            return self._rejected(
+                orchestration_id="",
+                now_ns=now_ns,
+                reasons=reasons,
+                active_processor_ids=active,
+            )
 
-        ordered_proposals = [proposals[name] for name in EXTREMITY_PROCESSORS]
+        ordered_proposals = [proposals[name] for name in active]
         orchestration_ids = {proposal.orchestration_id for proposal in ordered_proposals}
         if len(orchestration_ids) != 1 or not next(iter(orchestration_ids)):
-            return self._rejected(orchestration_id="", now_ns=now_ns, reasons=["orchestration_id_missing_or_mismatched"])
+            return self._rejected(
+                orchestration_id="",
+                now_ns=now_ns,
+                reasons=["orchestration_id_missing_or_mismatched"],
+                active_processor_ids=active,
+            )
         orchestration_id = next(iter(orchestration_ids))
         if orchestration_id in self._seen_orchestration_ids:
-            return self._rejected(orchestration_id=orchestration_id, now_ns=now_ns, reasons=["replayed_orchestration"])
+            return self._rejected(
+                orchestration_id=orchestration_id,
+                now_ns=now_ns,
+                reasons=["replayed_orchestration"],
+                active_processor_ids=active,
+            )
         self._seen_orchestration_ids.add(orchestration_id)
 
         spatial_reasons = self._spatial_reasons(spatial_snapshot, state)
         if spatial_reasons:
-            return self._rejected(orchestration_id=orchestration_id, now_ns=now_ns, reasons=spatial_reasons)
+            return self._rejected(
+                orchestration_id=orchestration_id,
+                now_ns=now_ns,
+                reasons=spatial_reasons,
+                active_processor_ids=active,
+            )
 
         try:
             decisions = tuple(
                 self.processors[name].validate(proposals[name], state, now_ns=now_ns)
-                for name in EXTREMITY_PROCESSORS
+                for name in active
             )
         except ValueError:
             return self._rejected(
                 orchestration_id=orchestration_id,
                 now_ns=now_ns,
                 reasons=["processor_state_incompatible"],
+                active_processor_ids=active,
             )
         decision_map = {item.processor_id: item for item in decisions}
         coordinator_decisions = tuple(
-            coordinator.coordinate(decision_map) for coordinator in self.regional_coordinators
+            coordinator.coordinate(
+                decision_map,
+                tuple(processor_id for processor_id in coordinator.processor_ids if processor_id in active),
+            )
+            for coordinator in self.regional_coordinators
+            if any(processor_id in active for processor_id in coordinator.processor_ids)
         )
         failed = [
             f"{item.processor_id}:{reason}"
@@ -357,15 +416,16 @@ class FiveHeartOrchestrator:
                 reasons=[*failed, *coordinator_failures],
                 processor_decisions=decisions,
                 coordinator_decisions=coordinator_decisions,
+                active_processor_ids=active,
             )
 
         effective_positions = list(state.joint_positions)
-        for processor_id, item in zip(EXTREMITY_PROCESSORS, decisions):
+        for processor_id, item in zip(active, decisions):
             processor = self.processors[processor_id]
             for index, position in zip(processor.joint_indices, proposals[processor_id].target_positions):
                 effective_positions[index] = position
 
-        for processor_id, item in zip(EXTREMITY_PROCESSORS, decisions):
+        for processor_id, item in zip(active, decisions):
             if not self.processors[processor_id].commit(item):
                 return self._rejected(
                     orchestration_id=orchestration_id,
@@ -373,6 +433,7 @@ class FiveHeartOrchestrator:
                     reasons=[f"{processor_id}:sequence_commit_failed"],
                     processor_decisions=decisions,
                     coordinator_decisions=coordinator_decisions,
+                    active_processor_ids=active,
                 )
 
         status = "clamped" if any(item.decision.status == "clamped" for item in decisions) else "approved"
@@ -384,4 +445,5 @@ class FiveHeartOrchestrator:
             decisions,
             tuple(effective_positions),
             coordinator_decisions,
+            active,
         )

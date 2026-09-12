@@ -19,6 +19,7 @@ From the repository root, with Python 3.10 or newer:
 python -m unittest discover -s tests -v
 python -m robotic_os demo --json
 python -m robotic_os five-heart-demo --json
+python -m robotic_os spatial-4d-demo --mode normal --json
 python -m robotic_os workcell-info --json
 python -m robotic_os benchmark --iterations 1000
 python -m robotic_os soak --iterations 10000 --fault-interval 1000
@@ -74,8 +75,9 @@ It does not initially replace the computer kernel or hardware drivers.
 - **Replaceable components:** stable typed contracts allow models, simulators,
   sensors, and robot bodies to change independently.
 - **Hierarchical movement gate:** left/right arm and left/right leg processors
-  validate independently, upper/lower coordinators aggregate their pairs, and a
-  main orchestrator admits only complete, mutually consistent bundles.
+  validate independently, upper/lower coordinators aggregate their active
+  members, and a main orchestrator admits only complete, mutually consistent
+  bundles for the requested subset.
 - **Early context compaction:** optional advisory context is compacted at a
   configurable 40–50% threshold (45% by default) before it can consume a large
   model window.
@@ -170,6 +172,15 @@ The `release-gate` command evaluates those external production prerequisites
 and fails closed when any evidence is missing or tampered. It can report
 eligibility for independent production review, but never grants production or
 clinical approval itself. See [Production gates](docs/PRODUCTION_GATES.md).
+
+The `spatial-4d-demo` command exercises the offline 360-degree reference slice.
+It fuses timestamped multimodal evidence into observed and inferred moving
+entities, records unknown/contradictory sectors, applies ECO/NORMAL/DEGRADED
+emission policy, and exposes a legacy safety snapshot for the movement gate.
+The four extremity processors can be activated selectively; omitted limbs remain
+at their current positions and do not receive a sequence commit. See the
+[360 4D plan](docs/SRV_4D_PLAN.md) and
+[`robotic_os/spatial_4d.py`](robotic_os/spatial_4d.py).
 
 ## Repository policy
 

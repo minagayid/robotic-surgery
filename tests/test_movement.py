@@ -146,6 +146,21 @@ class FiveHeartOrchestratorTests(unittest.TestCase):
         self.assertEqual(second.status, "rejected")
         self.assertIn("replayed_orchestration", second.reasons)
 
+    def test_selective_extremity_brain_holds_inactive_joints(self) -> None:
+        all_proposals = self.proposals("right-arm-only")
+        decision = self.orchestrator.orchestrate(
+            {"right_arm": all_proposals["right_arm"]},
+            self.state,
+            spatial_snapshot=self.snapshot,
+            now_ns=1_000,
+            active_processors=("right_arm",),
+        )
+        self.assertEqual(decision.status, "approved")
+        self.assertEqual(decision.active_processor_ids, ("right_arm",))
+        self.assertEqual([item.processor_id for item in decision.processor_decisions], ["right_arm"])
+        self.assertEqual(decision.coordinator_decisions[0].processor_ids, ("right_arm",))
+        self.assertEqual(decision.effective_target_positions, (0.0, 0.0, 0.1, -0.1, 0.0, 0.0, 0.0, 0.0))
+
 
 if __name__ == "__main__":
     unittest.main()
