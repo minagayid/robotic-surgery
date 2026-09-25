@@ -10,7 +10,7 @@ clear error until the caller supplies an explicit summary. The summary is kept
 as `compaction_summary_untrusted`; it is not treated as a verified fact.
 
 ```python
-from robotic_os.context import AdvisoryContext
+from robotic_surgery.context import AdvisoryContext
 
 context = AdvisoryContext()
 context.append("system", "Advisory role only; never issue actuation commands.")

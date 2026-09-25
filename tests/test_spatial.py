@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import unittest
 
-from robotic_os.contracts import SpatialObservation
-from robotic_os.spatial import SpatialFusionEngine
+from robotic_surgery.contracts import SpatialObservation
+from robotic_surgery.spatial import SpatialFusionEngine
 
 
 class SpatialFusionTests(unittest.TestCase):

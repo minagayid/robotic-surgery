@@ -1,4 +1,4 @@
-"""Offline, simulation-only RobotX reference runtime.
+"""Offline, simulation-only Robotic Surgery reference runtime.
 
 This package is a host-side research reference. It does not contain hardware
 drivers, real-time guarantees, surgical workflows, or actuator access.

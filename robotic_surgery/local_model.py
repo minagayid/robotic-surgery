@@ -55,13 +55,13 @@ class LocalModelClient:
     @classmethod
     def from_env(cls) -> "LocalModelClient":
         try:
-            timeout = int(os.getenv("ROBOTX_LOCAL_LLM_TIMEOUT", "30"))
+            timeout = int(os.getenv("ROBOTIC_SURGERY_LOCAL_LLM_TIMEOUT", "30"))
         except ValueError:
             timeout = 30
         return cls(
-            endpoint=os.getenv("ROBOTX_LOCAL_LLM_BASE_URL", "").strip(),
-            model=os.getenv("ROBOTX_LOCAL_LLM_MODEL", "gpt-oss-20b").strip(),
-            api_key=os.getenv("ROBOTX_LOCAL_LLM_API_KEY", ""),
+            endpoint=os.getenv("ROBOTIC_SURGERY_LOCAL_LLM_BASE_URL", "").strip(),
+            model=os.getenv("ROBOTIC_SURGERY_LOCAL_LLM_MODEL", "gpt-oss-20b").strip(),
+            api_key=os.getenv("ROBOTIC_SURGERY_LOCAL_LLM_API_KEY", ""),
             timeout=timeout,
         )
 

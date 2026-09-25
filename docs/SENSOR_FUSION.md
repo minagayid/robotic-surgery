@@ -4,7 +4,7 @@ The goal is not to make every sensor produce an image. The goal is to combine
 independent evidence about occupancy, range, motion, material interaction, and
 uncertainty.
 
-The reference implementation is `robotic_os.spatial.SpatialFusionEngine`. It
+The reference implementation is `robotic_surgery.spatial.SpatialFusionEngine`. It
 accepts camera, depth, force, lidar, ultrasonic, mmWave radar, and Wi-Fi CSI
 observations, but it never treats an inferred scene as ground truth.
 

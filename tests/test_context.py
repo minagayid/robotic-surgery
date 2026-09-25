@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import unittest
 
-from robotic_os.context import AdvisoryContext, ContextCompactionPolicy
+from robotic_surgery.context import AdvisoryContext, ContextCompactionPolicy
 
 
 class ContextCompactionTests(unittest.TestCase):

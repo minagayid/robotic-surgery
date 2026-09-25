@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import unittest
 
-from robotic_os.contracts import MotionProposal, RobotState
+from robotic_surgery.contracts import MotionProposal, RobotState
 
 
 class ContractTests(unittest.TestCase):

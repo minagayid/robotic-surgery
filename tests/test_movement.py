@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 
-from robotic_os.contracts import MotionProposal, RobotState, SafetyLimits
-from robotic_os.movement import EXTREMITY_PROCESSORS, ExtremityProcessor, FiveHeartOrchestrator
-from robotic_os.spatial import SpatialFusionEngine
+from robotic_surgery.contracts import MotionProposal, RobotState, SafetyLimits
+from robotic_surgery.movement import EXTREMITY_PROCESSORS, ExtremityProcessor, FiveHeartOrchestrator
+from robotic_surgery.spatial import SpatialFusionEngine
 
 
 class FiveHeartOrchestratorTests(unittest.TestCase):
@@ -44,7 +44,7 @@ class FiveHeartOrchestratorTests(unittest.TestCase):
 
     @staticmethod
     def observation(modality: str):
-        from robotic_os.contracts import SpatialObservation
+        from robotic_surgery.contracts import SpatialObservation
 
         return SpatialObservation(
             source_id=f"{modality}-1",

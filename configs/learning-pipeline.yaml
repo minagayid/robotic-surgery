@@ -1,0 +1,39 @@
+seed: 0
+workdir: outputs
+backends:
+  hand_pose: mock
+  egomotion: mock
+  detector: mock
+  tracker: mock
+  depth: mock
+  action_seg: mock
+  captioner: mock
+  encoder: mock
+  policy: mock
+  planner: mock
+sampling:
+  target_fps: 4.0
+  min_shot_frames: 8
+quality:
+  min_resolution: 240
+  max_blur: 0.6
+  max_occlusion: 0.5
+privacy:
+  blur_faces: true
+  blur_plates: true
+  drop_if_unredactable: true
+retarget:
+  wrist_to_ee_offset:
+  - 0.0
+  - 0.0
+  - -0.03
+  gripper_open_dist: 0.08
+  gripper_closed_dist: 0.02
+  min_confidence: 0.3
+safety:
+  max_ee_speed_m_s: 0.15
+  max_gripper_closure_fraction: 0.25
+ops:
+  dedup_threshold: 0.98
+  enable_bias_filter: true
+  enable_safety_filter: true

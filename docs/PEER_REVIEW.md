@@ -6,7 +6,7 @@
 |---|---|
 | Frozen version | Local branch `feat/five-heart-spatial-guards`, working-tree revision, 2026-09-09 |
 | Purpose and decision | Decide whether the host reference slice correctly rejects the identified unsafe proposal path and whether the requested architecture is represented as a deterministic simulation |
-| Scope | `robotic_os/`, tests, CLI demo, movement orchestration, spatial fusion, advisory context policy, offline dataset admission, dataset catalog, and related safety documentation |
+| Scope | `robotic_surgery/`, tests, CLI demo, movement orchestration, spatial fusion, advisory context policy, offline dataset admission, dataset catalog, and related safety documentation |
 | Exclusions | Physical stopping distance, real-time scheduling, sensor accuracy, process isolation, hardware, clinical use, regulatory compliance, and model truthfulness |
 | Risk level | High-consequence research software; simulation-only implementation |
 | Domain references | `docs/ARCHITECTURE.md`, `docs/SENSOR_FUSION.md`, `docs/IMPLEMENTATION.md`, `docs/PHASE1_SAFETY_CASE.md`, `SECURITY.md`, and the code-review criteria |
@@ -30,19 +30,19 @@
 
 | ID | Severity | Location | Claim/invariant | Attack | Why it matters | Evidence status | Repair test |
 |---|---|---|---|---|---|---|---|
-| R1-1 | Major | `robotic_os/safety.py`, `SafetySupervisor.authorize` | All hard-limit failures reject a proposal | The implementation collected position/force failures, then replaced the reason list with velocity-clamp reasons; an out-of-range target with in-range requested velocity could therefore be approved | A safety limit can be bypassed in the host reference | Demonstrated by code inspection | Preserve hard-limit reasons and add out-of-range position/force regressions |
-| R1-2 | Major | `robotic_os/runtime.py`, `submit_orchestrated` | The new bundle path respects the runtime safety boundary | A separate entry point could bypass the global emergency-stop latch and full-vector limits while calling only per-extremity supervisors | A safety architecture is weakened by an alternate path | Demonstrated by adversarial inspection | Check global stop first and re-check aggregate limits before simulated execution |
-| R1-3 | Major | `robotic_os/movement.py`, `FiveHeartOrchestrator` | A complete bundle cannot rely on camera-only or stale evidence | A caller could construct a superficially clear snapshot with one modality or stale timestamp and pass it to orchestration | Spatial inference could be mistaken for verified clearance | Demonstrated by adversarial inspection | Require freshness, two independent modalities, and a wave modality at the final gate |
-| R1-4 | Major | `robotic_os/local_model.py` | Advisory context is bounded before it becomes large | The optional advisory client had no early context policy, so a long-lived prompt could consume most of a model window before caller intervention | Long context increases stale/inconsistent advisory state; motion must remain unaffected | Demonstrated by code inspection | Add a 40–50% policy with default 45%, explicit compaction, and threshold tests |
+| R1-1 | Major | `robotic_surgery/safety.py`, `SafetySupervisor.authorize` | All hard-limit failures reject a proposal | The implementation collected position/force failures, then replaced the reason list with velocity-clamp reasons; an out-of-range target with in-range requested velocity could therefore be approved | A safety limit can be bypassed in the host reference | Demonstrated by code inspection | Preserve hard-limit reasons and add out-of-range position/force regressions |
+| R1-2 | Major | `robotic_surgery/runtime.py`, `submit_orchestrated` | The new bundle path respects the runtime safety boundary | A separate entry point could bypass the global emergency-stop latch and full-vector limits while calling only per-extremity supervisors | A safety architecture is weakened by an alternate path | Demonstrated by adversarial inspection | Check global stop first and re-check aggregate limits before simulated execution |
+| R1-3 | Major | `robotic_surgery/movement.py`, `FiveHeartOrchestrator` | A complete bundle cannot rely on camera-only or stale evidence | A caller could construct a superficially clear snapshot with one modality or stale timestamp and pass it to orchestration | Spatial inference could be mistaken for verified clearance | Demonstrated by adversarial inspection | Require freshness, two independent modalities, and a wave modality at the final gate |
+| R1-4 | Major | `robotic_surgery/local_model.py` | Advisory context is bounded before it becomes large | The optional advisory client had no early context policy, so a long-lived prompt could consume most of a model window before caller intervention | Long context increases stale/inconsistent advisory state; motion must remain unaffected | Demonstrated by code inspection | Add a 40–50% policy with default 45%, explicit compaction, and threshold tests |
 
 ### Resolutions
 
 | Flag | Action | Artifact/test changed | Why this addresses the attack | What it does not establish |
 |---|---|---|---|---|
-| R1-1 | Repair | `robotic_os/safety.py`; `tests/test_safety.py` | Hard-limit reasons are checked before velocity clamping and remain rejection reasons | It does not certify physical limits or actuator behavior |
-| R1-2 | Repair | `robotic_os/runtime.py`; `tests/test_runtime.py` | Orchestrated submissions honor the global stop latch and aggregate position/force/velocity limits | It does not provide independent hardware safety or process isolation |
-| R1-3 | Repair | `robotic_os/movement.py`, `robotic_os/spatial.py`; `tests/test_spatial.py`, `tests/test_movement.py` | Final admission denies missing, weak, stale, contradictory, camera-only, or wave-free clearance | It does not validate any real sensor, RF environment, or calibration procedure |
-| R1-4 | Repair | `robotic_os/context.py`, `robotic_os/local_model.py`, `docs/CONTEXT_COMPACTION.md`; `tests/test_context.py` | Requests crossing the early threshold fail until an explicit caller-supplied compaction is performed | Compaction is not fact verification and does not remove model hallucination risk |
+| R1-1 | Repair | `robotic_surgery/safety.py`; `tests/test_safety.py` | Hard-limit reasons are checked before velocity clamping and remain rejection reasons | It does not certify physical limits or actuator behavior |
+| R1-2 | Repair | `robotic_surgery/runtime.py`; `tests/test_runtime.py` | Orchestrated submissions honor the global stop latch and aggregate position/force/velocity limits | It does not provide independent hardware safety or process isolation |
+| R1-3 | Repair | `robotic_surgery/movement.py`, `robotic_surgery/spatial.py`; `tests/test_spatial.py`, `tests/test_movement.py` | Final admission denies missing, weak, stale, contradictory, camera-only, or wave-free clearance | It does not validate any real sensor, RF environment, or calibration procedure |
+| R1-4 | Repair | `robotic_surgery/context.py`, `robotic_surgery/local_model.py`, `docs/CONTEXT_COMPACTION.md`; `tests/test_context.py` | Requests crossing the early threshold fail until an explicit caller-supplied compaction is performed | Compaction is not fact verification and does not remove model hallucination risk |
 
 ### Round decision
 
@@ -55,13 +55,13 @@ related boundary gaps have concrete regression coverage.
 
 | ID | Severity | Location | Claim/invariant | Attack | Why it matters | Evidence status | Repair test |
 |---|---|---|---|---|---|---|---|
-| R2-1 | Minor | `robotic_os/context.py`, `AdvisoryContext.compact` | `keep_last=0` drops all non-system messages | Python’s `[-0:]` slice keeps the entire list, so a caller asking for no recent turns could fail to compact below the threshold | It blocks a valid deterministic recovery operation | Demonstrated by the first test run | Handle zero explicitly and retain a regression test |
+| R2-1 | Minor | `robotic_surgery/context.py`, `AdvisoryContext.compact` | `keep_last=0` drops all non-system messages | Python’s `[-0:]` slice keeps the entire list, so a caller asking for no recent turns could fail to compact below the threshold | It blocks a valid deterministic recovery operation | Demonstrated by the first test run | Handle zero explicitly and retain a regression test |
 
 ### Resolutions
 
 | Flag | Action | Artifact/test changed | Why this addresses the attack | What it does not establish |
 |---|---|---|---|---|
-| R2-1 | Repair | `robotic_os/context.py`; `tests/test_context.py` | Zero now means an empty recent-message set, allowing the explicit summary to reduce context | It does not judge whether a human- or model-supplied summary is accurate |
+| R2-1 | Repair | `robotic_surgery/context.py`; `tests/test_context.py` | Zero now means an empty recent-message set, allowing the explicit summary to reduce context | It does not judge whether a human- or model-supplied summary is accurate |
 
 ### Round decision
 
@@ -80,7 +80,7 @@ Proceed to final verification. No Critical or Major flag remains within scope.
 
 | Flag | Action | Artifact/test changed | Why this addresses the attack | What it does not establish |
 |---|---|---|---|---|
-| R3-1 | Repair | `robotic_os/data.py`, `tests/test_data.py`, `docs/DATASET_CATALOG.md` | Admission now requires a checksum-verified local archive, de-identification evidence, an allowed research use, and registered provenance | It does not verify the truth of a provider's ethics/license statement or grant access |
+| R3-1 | Repair | `robotic_surgery/data.py`, `tests/test_data.py`, `docs/DATASET_CATALOG.md` | Admission now requires a checksum-verified local archive, de-identification evidence, an allowed research use, and registered provenance | It does not verify the truth of a provider's ethics/license statement or grant access |
 | R3-2 | Repair | `docs/DATASET_CATALOG.md`, `docs/surgical/DATA_TRAINING.md` | Sources are explicitly stratified by clinical POV, OR context, phantom, and ex-vivo purpose; direct motor learning is prohibited | It does not produce target-platform wave data or clinical evidence |
 
 ### Round decision

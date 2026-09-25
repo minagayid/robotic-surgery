@@ -67,7 +67,7 @@ violations, and all failures reproducible from logs.
 
 **Goal:** show that POV pretraining improves a measurable baseline.
 
-- Connect robotX compliant data pipeline and real perception backends.
+- Connect the offline data curation path to real perception backends after licensing and verification.
 - Pretrain representations/affordances; keep retargeted actions weak-labeled.
 - Collect target-robot teleoperation demonstrations.
 - Compare scratch, generic pretrained, and POV-pretrained policies on held-out

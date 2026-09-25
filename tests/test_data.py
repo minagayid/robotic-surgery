@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from robotic_os.data import OfflineDatasetManifest, OfflineDatasetRegistry
+from robotic_surgery.data import OfflineDatasetManifest, OfflineDatasetRegistry
 
 
 class OfflineDatasetRegistryTests(unittest.TestCase):
