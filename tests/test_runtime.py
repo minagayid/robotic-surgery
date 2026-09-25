@@ -4,12 +4,12 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from robotic_os.clock import DeterministicClock
-from robotic_os.contracts import MotionProposal, RobotState, SafetyLimits, SpatialObservation
-from robotic_os.events import EventJournal
-from robotic_os.movement import EXTREMITY_PROCESSORS, ExtremityProcessor, FiveHeartOrchestrator
-from robotic_os.runtime import OfflineRuntime
-from robotic_os.spatial import SpatialFusionEngine
+from robotic_surgery.clock import DeterministicClock
+from robotic_surgery.contracts import MotionProposal, RobotState, SafetyLimits, SpatialObservation
+from robotic_surgery.events import EventJournal
+from robotic_surgery.movement import EXTREMITY_PROCESSORS, ExtremityProcessor, FiveHeartOrchestrator
+from robotic_surgery.runtime import OfflineRuntime
+from robotic_surgery.spatial import SpatialFusionEngine
 
 
 class RuntimeTests(unittest.TestCase):

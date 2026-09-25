@@ -92,7 +92,7 @@ spatial evidence, and a single atomic commit boundary. Missing, stale,
 contradictory, or malformed evidence rejects the complete bundle; it never
 guesses a missing extremity command.
 
-The existing robotX `ClipRecord` remains a training-side contract and should not
+The learning pipeline's `ClipRecord` remains a training-side contract and should not
 be used as a live control message.
 
 ## Planning and control rates
@@ -127,7 +127,7 @@ Rates are hypotheses until measured on target hardware.
 Start as a modular monorepo only after the contracts stabilize:
 
 ```text
-robotx-os/
+robotic-surgery/
   contracts/       versioned schemas and compatibility tests
   drivers/         sensors and actuator adapters
   world_model/     synchronization, fusion, tracking, mapping

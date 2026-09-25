@@ -1,1 +1,1 @@
-"""Tests for the offline RobotX reference runtime."""
+"""Tests for the offline Robotic Surgery reference runtime."""

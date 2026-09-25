@@ -4,8 +4,8 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from robotic_os.benchmark import run_benchmark
-from robotic_os.scenarios import run_demo, run_five_heart_demo
+from robotic_surgery.benchmark import run_benchmark
+from robotic_surgery.scenarios import run_demo, run_five_heart_demo
 
 
 class ScenarioTests(unittest.TestCase):

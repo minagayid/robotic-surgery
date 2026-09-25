@@ -1,4 +1,4 @@
-# RobotX Surgical Program Charter
+# Robotic Surgery Program Charter
 
 > Planning only. This document does not authorize clinical, dental, or animal
 > use and is not medical or legal advice.
@@ -23,7 +23,7 @@ only moves instruments has not mastered a full procedure.
 - The robot never expands its own intended use, autonomy level, force envelope,
   energy setting, anatomical workspace, or instrument permissions.
 - Anesthesia and physiologic management remain separate clinician-controlled
-  systems. RobotX may consume approved status/interlock signals but does not
+  systems. Robotic Surgery may consume approved status/interlock signals but does not
   independently administer anesthesia or medication.
 - No Internet dependency is allowed during a procedure. Offline operation does
   not eliminate cybersecurity, supply-chain, removable-media, or insider risk.

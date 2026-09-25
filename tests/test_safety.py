@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import unittest
 
-from robotic_os.clock import DeterministicClock
-from robotic_os.contracts import MotionProposal, RobotState, SafetyLimits
-from robotic_os.safety import SafetySupervisor
+from robotic_surgery.clock import DeterministicClock
+from robotic_surgery.contracts import MotionProposal, RobotState, SafetyLimits
+from robotic_surgery.safety import SafetySupervisor
 
 
 class SafetySupervisorTests(unittest.TestCase):

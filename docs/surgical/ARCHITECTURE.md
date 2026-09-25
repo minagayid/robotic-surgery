@@ -54,7 +54,7 @@ privacy and retention policy.
 
 ## Surgical state model
 
-The world model extends the general RobotX scene graph with:
+The world model extends the general Robotic Surgery scene graph with:
 
 - patient and procedure identity confirmed through a clinical workflow;
 - registered preoperative/intraoperative anatomy;

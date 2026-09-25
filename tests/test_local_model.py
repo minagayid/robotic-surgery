@@ -4,8 +4,8 @@ import os
 import unittest
 from unittest.mock import patch
 
-from robotic_os.context import ContextCompactionPolicy
-from robotic_os.local_model import LocalModelClient
+from robotic_surgery.context import ContextCompactionPolicy
+from robotic_surgery.local_model import LocalModelClient
 
 
 class LocalModelTests(unittest.TestCase):

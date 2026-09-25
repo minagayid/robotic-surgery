@@ -5,7 +5,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from robotic_os.events import EventJournal
+from robotic_surgery.events import EventJournal
 
 
 class EventJournalTests(unittest.TestCase):

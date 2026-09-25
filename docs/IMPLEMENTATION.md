@@ -2,7 +2,7 @@
 
 ## Delivered slice
 
-The `robotic_os` package is a small offline reference runtime for research and
+The `robotic_surgery` package is a small offline reference runtime for research and
 simulation. It provides:
 
 - typed motion proposals, robot state, safety limits, and safety decisions;
@@ -29,9 +29,9 @@ simulation. It provides:
 
 ```powershell
 python -m unittest discover -s tests -v
-python -m robotic_os demo --json
-python -m robotic_os five-heart-demo --json
-python -m robotic_os benchmark --iterations 1000
+python -m robotic_surgery demo --json
+python -m robotic_surgery five-heart-demo --json
+python -m robotic_surgery benchmark --iterations 1000
 ```
 
 The default demo journal is written under `runtime-data/`, which is ignored by
