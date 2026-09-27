@@ -81,3 +81,7 @@ See [engineering foundations](docs/ENGINEERING_FOUNDATIONS.md),
 [dataset catalog](docs/DATASET_CATALOG.md), and
 [surgical operations](docs/surgical/OPERATIONS.md). Third-party license notices
 for absorbed code are in [LICENSES](LICENSES/MIT-LICENSE.txt).
+
+## Related project
+
+RobotX and its spatial 4D feature-branch snapshot are preserved under [`related-projects/`](related-projects/). See the [project index](CONSOLIDATED_PROJECTS.md).
