@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+build/
+dist/
+.venv/
+venv/
+env/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Data & model artifacts (never commit raw video, checkpoints, or datasets)
+data/
+datasets/
+checkpoints/
+*.ckpt
+*.pt
+*.pth
+*.mp4
+*.mkv
+*.mov
+runs/
+outputs/
+*.log
+
+# Keep the source package named "data"; only runtime datasets above are ignored.
+!src/
+!src/robotx/
+!src/robotx/data/
+!src/robotx/data/**/*.py

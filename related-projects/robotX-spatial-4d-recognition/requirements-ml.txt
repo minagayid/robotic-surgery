@@ -1,0 +1,14 @@
+# Optional heavy ML backends. Install to swap real models in for the mock
+# backends. None of these are needed to run or test the pipeline scaffold.
+#
+#   pip install -r requirements-ml.txt
+#
+torch>=2.1
+opencv-python>=4.8
+mediapipe>=0.10          # hand / body pose (Section 2)
+transformers>=4.40       # VLM captioning + VLA policies (Sections 2, 4)
+# The following are typically installed from source per their own repos:
+#   Grounding DINO   -> open-vocabulary detection (Section 2)
+#   segment-anything-2 (SAM2) -> mask tracking (Section 2)
+#   Depth-Anything-V2 -> monocular depth (Section 2)
+#   r3m / vip / vc_models -> visual representation encoders (Section 3A)

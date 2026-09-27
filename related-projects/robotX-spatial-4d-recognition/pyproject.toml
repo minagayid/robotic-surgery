@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "robotx"
+version = "0.1.0"
+description = "POV Video -> Robot Learning System: a compliant pipeline for learning robot policies from egocentric human video."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { file = "LICENSE" }
+authors = [{ name = "robotX" }]
+keywords = ["robotics", "imitation-learning", "egocentric-video", "vla", "learning-from-video"]
+dependencies = [
+    "numpy>=1.24",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+# Heavy ML backends. These are NOT required to run the pipeline with mock
+# backends (the default), only to swap in real models. See docs/backends.md.
+ml = [
+    "torch>=2.1",
+    "opencv-python>=4.8",
+    "mediapipe>=0.10",       # hand/body pose
+    "transformers>=4.40",    # VLM captioning, VLA policies
+]
+dev = [
+    "pytest>=7.4",
+    "ruff>=0.4",
+]
+
+[project.scripts]
+robotx = "robotx.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
