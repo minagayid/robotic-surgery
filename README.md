@@ -85,3 +85,7 @@ for absorbed code are in [LICENSES](LICENSES/MIT-LICENSE.txt).
 ## Related project
 
 RobotX and its spatial 4D feature-branch snapshot are preserved under [`related-projects/`](related-projects/). See the [project index](CONSOLIDATED_PROJECTS.md).
+
+## Agent evaluation roadmap
+
+See [evaluation contracts and evidence gates](docs/evaluation-roadmap.md) and [Agent Eval Lab](https://github.com/minagayid/agent-eval-lab).
