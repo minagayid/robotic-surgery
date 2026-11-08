@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import math
 import unittest
+from dataclasses import replace
 
 from robotic_surgery.dexterity_benchmark import (
     DexterityTrial,
@@ -119,7 +120,17 @@ class DexterityTrialTests(unittest.TestCase):
 
     def test_rejects_frames_outside_trial_window(self) -> None:
         with self.assertRaises(ValueError):
-            trial("trial-1", success=True, forces=((0.0, 0.0, 2.0),))
+            DexterityTrial(
+                trial_id="trial-1",
+                task_id="peg-transfer-v1",
+                platform_id="platform-a",
+                started_at_ns=1_000,
+                finished_at_ns=2_000,
+                success=True,
+                operator_interventions=0,
+                dropped_objects=0,
+                tactile_frames=(frame(timestamp_ns=2_001),),
+            )
 
 
 class BenchmarkEvaluationTests(unittest.TestCase):
@@ -144,7 +155,7 @@ class BenchmarkEvaluationTests(unittest.TestCase):
     def test_rejects_mixed_tasks_and_duplicate_trials(self) -> None:
         first = trial("t1", success=True)
         second = trial("t2", success=True)
-        object.__setattr__(second, "task_id", "another-task")
+        second = replace(second, task_id="another-task")
         with self.assertRaises(ValueError):
             evaluate_trials((first, second))
 
