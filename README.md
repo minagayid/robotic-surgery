@@ -82,6 +82,21 @@ See [engineering foundations](docs/ENGINEERING_FOUNDATIONS.md),
 [surgical operations](docs/surgical/OPERATIONS.md). Third-party license notices
 for absorbed code are in [LICENSES](LICENSES/MIT-LICENSE.txt).
 
+## Tactile data and dexterity benchmark (research draft)
+
+The experimental `robotic_surgery.dexterity_benchmark` module defines a versioned
+SI-unit tactile record, provenance-linked benchmark trials, and deterministic
+summary metrics. It is an early interoperability scaffold only: it does not
+connect to sensors or robot hardware, validate calibration, or establish safe
+force limits. See [the benchmark specification](docs/DEXTERITY_BENCHMARK.md)
+and its tests.
+
+Funding-call preparation notes are maintained in [funding/](funding/). They are
+internal readiness assessments, not proof of eligibility or submitted
+applications. The ARIA draft has unconfirmed partners, test sites and budget;
+the DARPA review identifies physical qualification evidence that is not
+currently present.
+
 ## Related project
 
 RobotX and its spatial 4D feature-branch snapshot are preserved under [`related-projects/`](related-projects/). See the [project index](CONSOLIDATED_PROJECTS.md).
