@@ -116,6 +116,9 @@ collision-safety input.
    simulator, world representation, and model runtime.
 4. Build the sensor timing/latency bench before selecting fusion algorithms.
 5. Create the first hazard log and tabletop evaluation scenario pack.
+6. Decide the physics simulation backend per the free-only trial in
+   [docs/SIMULATION_PLATFORMS.md](docs/SIMULATION_PLATFORMS.md): a MuJoCo-class
+   free backend now, Isaac Sim when RTX access exists.
 
 ## Surgical extension
 
