@@ -4,28 +4,80 @@ Trial date: 2026-11-21. Goal: try this repository's software on NVIDIA Isaac
 Sim via the cloud, spending nothing (no subscriptions, no payments), and
 record what runs, what does not, and the concrete path forward.
 
-## Verdict
+## Verdict, corrected after account checks and a real Kaggle run
 
-**Isaac Sim cannot currently run free in the cloud.** The software itself is
-free and open source (Apache-2.0; Isaac Sim 6.0.1 and Isaac Lab at trial date),
-but it requires an NVIDIA GPU with RT cores, and no free cloud tier provides
-one:
+**Isaac Sim 6.0.1 installed and basic headless physics ran on a free Kaggle
+T4 session, but GPU rendering failed and shutdown segfaulted.** This tested
+environment is not a demonstrated GPU-rendered Isaac Sim setup. This is a
+bounded finding, not proof that every free route is impossible.
+Isaac Sim software is free, but cloud compute can still be paid. Its open-source
+extensions and additional NVIDIA/Omniverse components have separate terms.
 
-- Minimum supported GPU is RTX 4080-class with 16 GB VRAM; GPUs without RT
-  cores (A100, H100) are explicitly unsupported.
-  Source: https://docs.isaacsim.omniverse.nvidia.com/latest/installation/requirements.html
-- Free cloud GPUs (Google Colab, Kaggle) are T4/P100 class - no RT cores, so
-  Isaac Sim will not run on them.
-- NVIDIA's own staff confirmed on the developer forums (Feb 2025): "I'm not
-  aware of a completely free option for cloud deployment of Isaac Sim."
-  Source: https://forums.developer.nvidia.com/t/how-can-i-use-nvidia-isaac-sim-on-cloud-free/324541
-- The official Isaac Launchable path (VS Code + streamed Isaac Sim UI in the
-  browser, via NVIDIA Brev) is pay-by-the-hour; its README says so directly
-  and advises stopping instances when idle.
-  Source: https://github.com/isaac-sim/isaac-launchable
-- All other official cloud targets (AWS, Azure, GCP, Tencent, Alibaba, Baidu,
-  Volcano Engine) are ordinary paid GPU instances.
-  Source: https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_cloud.html
+On 21 November 2026, `launchpad.nvidia.com` redirected to NVIDIA Brev. The
+Isaac Launchable listing offered Isaac Sim 6.0.1 and Isaac Lab
+3.0.0-beta2-post1 on one AWS L40S (48 GB VRAM) at $3.65/hour. No deployment,
+payment or subscription was made. This listing is paid, not a free lab.
+
+- Isaac listing: https://brev.nvidia.com/launchable/deploy/now?launchableID=env-35JP2ywERLgqtD0b0MIeK1HnF46
+- Official launchable repository and hourly-billing caveat:
+  https://github.com/isaac-sim/isaac-launchable
+- NVIDIA scope/licensing and cloud-cost explanation:
+  https://developer.nvidia.com/isaac/sim
+
+**Correction:** the earlier version wrongly said T4 GPUs have no RT cores and
+therefore ruled out all free T4 notebooks. NVIDIA staff describes T4 and A10
+as RTX-capable, and NVIDIA publishes a T4 cloud deployment guide. Those
+sources do not establish compatibility with the current Isaac version or any
+particular hosted notebook. Driver, Vulkan/graphics exposure, Python, GLIBC,
+memory and disk support still need an actual run. P100 is a different GPU
+and must not be conflated with T4.
+
+- NVIDIA T4 discussion:
+  https://forums.developer.nvidia.com/t/issac-sim-rtx-requirements-for-t4-cloud-gpu-and-omniverse-streaming-client/323564
+- NVIDIA T4 cloud guide, whose older operating-system example should not be
+  treated as a current-version support guarantee:
+  https://docs.isaacsim.omniverse.nvidia.com/latest/installation/install_advanced_cloud_setup_tencent.html
+- Current requirements:
+  https://docs.isaacsim.omniverse.nvidia.com/latest/installation/requirements.html
+- Version-pinned Python installation instructions (6.0.1 requires Python 3.12
+  and Linux GLIBC 2.35+):
+  https://docs.isaacsim.omniverse.nvidia.com/6.0.1/installation/install_python.html
+
+## Free Kaggle T4 trial: measured outcome
+
+A private notebook received two Tesla T4 GPUs (15,360 MiB each), NVIDIA driver
+580.178.04, and GLIBC 2.39. The test used one active GPU and an isolated
+Python 3.12.3 environment, rather than the notebook's default Python 3.13.
+
+- The first serial pip attempt hit its 20-minute time bound downloading the
+  large extension caches. That was a download timeout, not a GPU verdict.
+- A cached parallel retry installed 166 packages successfully, including the
+  Isaac Sim 6.0.1.0 packages. Installation returned exit code 0.
+- A real `SimulationApp(headless=True, multi_gpu=False, active_gpu=0)` was
+  created. A world with a ground plane and a 0.1 m dynamic cube starting at
+  z=1 m ran for 120 steps. The final cube position was approximately
+  `[0.000896, -0.003717, 0.049997]` m, satisfying the smoke test's resting-height
+  check. This establishes basic rigid-body physics execution, not surgical
+  capability or GPU-accelerated physics performance.
+- Graphics initialization reported `ERROR_INCOMPATIBLE_DRIVER`, failed
+  `vkCreateInstance`, failed to create any GPU devices, and reported that GPU
+  Foundation was not initialized. Extension import errors also occurred.
+- The script called `world.step(render=True)`, but those calls and the smoke
+  test's unfortunately named `ISAAC_WORLD_120_RENDERED_STEPS_OK` marker are
+  **not proof of successful rendering**. No valid GPU-rendered image was
+  established, and the graphics errors explicitly show initialization failure.
+- After the physics check, extension shutdown ended in a Python segmentation
+  fault during garbage collection, process exit code -11. A clean process exit
+  was not achieved.
+
+Conclusion: package installation and basic headless physics are feasible in
+this allocated session. A usable GPU-rendered Isaac Sim 6.0.1 environment was
+not achieved in this Kaggle image. The observed problem is graphics/driver
+exposure and runtime stability, not evidence that T4 has no RT capability.
+This trial does not identify the exact host/container configuration repair,
+prove all free providers fail, or validate the repository's robot in Isaac.
+The notebook session was stopped after evidence collection. No paid compute,
+subscription, or purchase was used.
 
 ## What did run, free
 
@@ -55,23 +107,30 @@ under gravity, energy dissipates under damping, and two identical runs
 produce bit-identical final states (the replay determinism the event journal
 relies on). All three checks pass with MuJoCo 3.17.0.
 
-## Free paths to real Isaac Sim, ranked
+## Remaining access paths, without assuming availability
 
-1. **NVIDIA LaunchPad** (https://launchpad.nvidia.com) - free, time-boxed
-   hands-on labs on NVIDIA-hosted infrastructure, accessed by application.
-   Lab catalog changes over time; check whether an Isaac Sim lab is currently
-   offered before counting on it.
-2. **A local RTX machine** (university lab, workplace, or a friend's gaming
-   PC with an RTX card) - the Isaac Sim download is free; the GPU is the only
-   gate.
-3. **Cheapest paid path when a small budget exists (not in scope for the
-   free-only trial):** NVIDIA Brev Isaac Launchable on an L4/A10G-class
-   instance. Third-party comparison lists Brev's cheapest on-demand rate at
-   about $0.35/hr with per-second billing; verify current pricing on Brev
-   before launching, and stop the instance when idle.
-   Source: https://computecomparison.com/provider/brev-dev
-4. **Not viable:** Colab/Kaggle free GPUs (no RT cores) and generic
-   free-tier CPU VMs.
+1. **Free hosted T4 notebook:** this Kaggle image failed the GPU-rendering
+   check described above. Another environment still needs an actual current-
+   version run. Free-tier GPU allocation is not guaranteed, and graphics
+   drivers/OS restrictions can differ from ordinary cloud VMs.
+2. **Existing suitable local or institution-provided RTX hardware:** software
+   access does not itself supply hardware or authorize use of another person's
+   computer.
+3. **Supermicro LaunchPad evaluation:** the partner still advertises free
+   remote evaluation on approval. The form requires first/last name, business
+   email, organization, industry, job title, GPU choice and workload summary.
+   A specialist follows up. Isaac availability, region eligibility and approval
+   are not established; no application was submitted.
+   https://www.supermicro.com/en/accelerators/nvidia/launchpad
+4. **Paid Brev:** explicitly outside this free-only trial. The actual offered
+   Isaac configuration was $3.65/hour, not the earlier aggregator's cheapest
+   general GPU price. Do not infer the Isaac price from a provider-wide floor.
+
+The old NVIDIA LaunchPad free-lab catalog is not a verified current Isaac
+access route. A discontinued Morpheus lab is documented by NVIDIA staff, but
+that statement is specific to Morpheus and must not be generalized into proof
+that every partner evaluation has ended.
+https://forums.developer.nvidia.com/t/morpheus-ai-and-launchpad/352493
 
 ## Roadmap: simulation backends
 
