@@ -104,3 +104,12 @@ RobotX and its spatial 4D feature-branch snapshot are preserved under [`related-
 ## Agent evaluation roadmap
 
 See [evaluation contracts and evidence gates](docs/evaluation-roadmap.md) and [Agent Eval Lab](https://github.com/minagayid/agent-eval-lab).
+
+## Simulation platform trial (Nov 2026)
+
+A free-only trial of NVIDIA Isaac Sim in the cloud, what ran instead, and the
+roadmap for physics simulation backends (MuJoCo now, Isaac Sim when RTX
+access exists) is documented in
+[docs/SIMULATION_PLATFORMS.md](docs/SIMULATION_PLATFORMS.md), with a runnable
+free example in
+[examples/mujoco_two_link_demo.py](examples/mujoco_two_link_demo.py).
